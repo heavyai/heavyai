@@ -2,6 +2,10 @@ import datetime
 import numpy as np
 import pandas as pd
 
+from types import MethodType
+from ._mutators import set_tdf, get_tdf
+from .ipc import load_buffer, shmdt
+
 
 def seconds_to_time(seconds):
     """Convert seconds since midnight to a datetime.time"""
@@ -68,6 +72,87 @@ def date_to_seconds(arr):
     """Converts date into seconds"""
 
     return arr.apply(lambda x: np.datetime64(x, "s").astype(int))
+
+def _parse_tdf_gpu(tdf):
+    """
+    Parse the results of a select ipc_gpu into a GpuDataFrame
+
+    Parameters
+    ----------
+    tdf : TDataFrame
+
+    Returns
+    -------
+    gdf : GpuDataFrame
+    """
+
+    import pyarrow as pa
+    from cudf.comm.gpuarrow import GpuArrowReader
+    from cudf.core.dataframe import DataFrame
+    from cudf._lib.arrow._cuda import Context, IpcMemHandle
+    from numba import cuda
+
+    ipc_handle = IpcMemHandle.from_buffer(pa.py_buffer(tdf.df_handle))
+    ctx = Context()
+    ipc_buf = ctx.open_ipc_buffer(ipc_handle)
+    ipc_buf.context.synchronize()
+
+    schema_buffer, shm_ptr = load_buffer(tdf.sm_handle, tdf.sm_size)
+
+    buffer = pa.BufferReader(schema_buffer)
+    schema = pa.read_schema(buffer)
+
+    # Dictionary Memo functionality used to
+    # deserialize on the C++ side is not
+    # exposed on the pyarrow side, so we need to
+    # handle this on our own.
+    dict_memo = {}
+
+    try:
+        dict_batch_reader = pa.RecordBatchStreamReader(buffer)
+        updated_fields = []
+
+        for f in schema:
+            if pa.types.is_dictionary(f.type):
+                msg = dict_batch_reader.read_next_batch()
+                dict_memo[f.name] = msg.column(0)
+                updated_fields.append(pa.field(f.name, f.type.index_type))
+            else:
+                updated_fields.append(pa.field(f.name, f.type))
+
+        schema = pa.schema(updated_fields)
+    except pa.ArrowInvalid:
+        # This message does not have any dictionary encoded
+        # columns
+        pass
+
+    dtype = np.dtype(np.byte)
+    darr = cuda.devicearray.DeviceNDArray(
+        shape=ipc_buf.size,
+        strides=dtype.itemsize,
+        dtype=dtype,
+        gpu_data=ipc_buf.to_numba(),
+    )
+
+    reader = GpuArrowReader(schema, darr)
+    df = DataFrame()
+    df.set_tdf = MethodType(set_tdf, df)
+    df.get_tdf = MethodType(get_tdf, df)
+
+    for k, v in reader.to_dict().items():
+        if k in dict_memo:
+            df[k] = pa.DictionaryArray.from_arrays(v, dict_memo[k])
+        else:
+            df[k] = v
+
+    df.set_tdf(tdf)
+
+    # free shared memory from Python
+    # https://github.com/omnisci/pymapd/issues/46
+    # https://github.com/omnisci/pymapd/issues/31
+    free_sm = shmdt(ctypes.cast(shm_ptr, ctypes.c_void_p))  # noqa
+
+    return df
 
 
 mapd_to_slot = {

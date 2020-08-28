@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 from thrift.transport import TSocket, TTransport
 from thrift.transport.TSocket import TTransportException
-from pymapd import connect
+from pyomnisci import connect
 import datetime
 import random
 import string
@@ -75,8 +75,8 @@ def con(mapd_server):
 
 @pytest.fixture
 def mock_client(mocker):
-    """A magicmock for pymapd.connection.Client"""
-    return mocker.patch("pymapd.connection.Client")
+    """A magicmock for omnisci.connection.Client"""
+    return mocker.patch("omnisci.connection.Client")
 
 
 def no_gpu():

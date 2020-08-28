@@ -217,7 +217,7 @@ def main(args=None):
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
-    con = pymapd.connect(
+    con = omnisci.connect(
         user='admin',
         password='HyperInteractive',
         dbname='omnisci',

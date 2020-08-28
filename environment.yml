@@ -3,7 +3,6 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- thrift=0.13.0
 - pyarrow==0.15.0.*
 - pandas>=0.25,<0.26
 - python>3.6.6,<3.8

@@ -11,7 +11,7 @@ with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 install_requires = [
     'pyarrow == 0.15.0',
-    'thrift == 0.13.0',
+    'omniscidb-connector',
     'shapely',
     'sqlalchemy >= 1.3',
     'pandas >= 0.25,<0.26',

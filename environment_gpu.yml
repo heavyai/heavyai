@@ -5,7 +5,6 @@ channels:
 - nvidia
 - rapidsai
 dependencies:
-- thrift=0.13.0
 - cudf=0.14
 - cudatoolkit=10.1
 - pyarrow==0.15.0.*

@@ -166,6 +166,7 @@ def build_input_columnar(
             if is_array:
                 # Expand the dataframe so each array item has
                 # its own field in the dataframe.
+                print(mapd_type)
                 data = data.iloc[:, 0].apply(pd.Series)
 
             if mapd_type in {'TIME', 'TIMESTAMP', 'DATE', 'BOOL'}:

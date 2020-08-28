@@ -16,9 +16,9 @@ paramstyle = "named"
 
 from .connection import connect, Connection  # noqa
 
-from .cursor import Cursor  # noqa
+from omnisci.cursor import Cursor  # noqa
 
-from .exceptions import (  # noqa
+from omnisci.exceptions import (  # noqa
     Warning,
     Error,
     InterfaceError,
@@ -32,7 +32,7 @@ from .exceptions import (  # noqa
 )
 
 
-from .dtypes import (  # noqa
+from omnisci.dtypes import (  # noqa
     Binary,
     Date,
     Time,

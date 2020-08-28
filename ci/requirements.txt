@@ -1,7 +1,7 @@
-thrift==0.13.0
 pyarrow==0.15.0
 pandas>=0.25,<0.26
 geopandas
+pyomniscidb==5.4.0rc1
 sqlalchemy
 numpy
 numpydoc

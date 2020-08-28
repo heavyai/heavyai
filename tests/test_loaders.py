@@ -1,8 +1,8 @@
 import pytest
 import datetime
-from pymapd._loaders import _build_input_rows
-from pymapd import _pandas_loaders
-from pymapd._parsers import ColumnDetails
+from omnisci._loaders import _build_input_rows
+from pyomnisci import _pandas_loaders
+from omnisci._parsers import ColumnDetails
 from omnisci.thrift.OmniSci import (
     TStringRow,
     TStringValue,
@@ -329,7 +329,7 @@ class TestLoaders:
     )
     def test_build_table_columnar(self, data, col_properties):
 
-        from pymapd._pandas_loaders import build_input_columnar
+        from pyomnisci._pandas_loaders import build_input_columnar
 
         col_types = get_col_types(col_properties)
 
