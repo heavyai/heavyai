@@ -11,7 +11,7 @@ with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 install_requires = [
     'pyarrow == 0.15.0',
-    'omniscidb-connector',
+    'pyomniscidb >=5.4.0rc1',
     'shapely',
     'sqlalchemy >= 1.3',
     'pandas >= 0.25,<0.26',
@@ -37,7 +37,7 @@ extra_requires = {
 
 setup(
     name='pyomnisci',
-    description='A DB API 2 compatible client for OmniSci (formerly MapD).',
+    description='Data science toolkit support for OmniSciDB',
     long_description=long_description,
     url='https://github.com/omnisci/pyomnisci',
     author='OmniSci',
