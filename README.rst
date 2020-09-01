@@ -1,6 +1,6 @@
-======
+=========
 pyomnisci
-======
+=========
 
 .. image:: https://readthedocs.org/projects/pyomnisci/badge/?version=latest
    :target: http://pyomnisci.readthedocs.io/en/latest/?badge=latest
