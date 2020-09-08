@@ -61,7 +61,6 @@ class Connection(omnisci.Connection):
         method='infer',
         preserve_index=False,
         create='infer',
-        **kwargs
     ):
         """Load data into a table
 
@@ -121,16 +120,16 @@ class Connection(omnisci.Connection):
                 or isinstance(data, pa.Table)
                 or isinstance(data, pa.RecordBatch)
             ):  # noqa
-                return self.load_table_arrow(table_name, data, kwargs)
+                return self.load_table_arrow(table_name, data)
 
             elif isinstance(data, pd.DataFrame):
-                return self.load_table_columnar(table_name, data, kwargs)
+                return self.load_table_columnar(table_name, data)
 
         elif method == 'arrow':
-            return self.load_table_arrow(table_name, data, kwargs)
+            return self.load_table_arrow(table_name, data)
 
         elif method == 'columnar':
-            return self.load_table_columnar(table_name, data, kwargs)
+            return self.load_table_columnar(table_name, data)
 
         elif method != 'rows':
             raise TypeError(
