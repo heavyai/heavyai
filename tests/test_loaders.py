@@ -1,6 +1,6 @@
 import pytest
 import datetime
-from omnisci._loaders import _build_input_rows
+from pyomnisci._loaders import _build_input_rows
 from pyomnisci import _pandas_loaders
 from omnisci._parsers import ColumnDetails
 from omnisci.thrift.OmniSci import (
