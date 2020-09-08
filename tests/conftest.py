@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 from uuid import uuid4
@@ -12,12 +13,14 @@ import string
 import numpy as np
 import pandas as pd
 
+omniscihost = os.environ.get('OMNISCI_HOST', 'localhost')
+
 
 def _check_open():
     """
     Test to see if OmniSci running on localhost and socket open
     """
-    socket = TSocket.TSocket("localhost", 6274)
+    socket = TSocket.TSocket(omniscihost, 6274)
     transport = TTransport.TBufferedTransport(socket)
 
     try:
@@ -63,10 +66,11 @@ def con(mapd_server):
     """
     Fixture to provide Connection for tests run against live OmniSci instance
     """
+
     return connect(
         user="admin",
         password='HyperInteractive',
-        host='localhost',
+        host=omniscihost,
         port=6274,
         protocol='binary',
         dbname='omnisci',
