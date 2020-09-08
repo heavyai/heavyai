@@ -61,6 +61,7 @@ class Connection(omnisci.Connection):
         method='infer',
         preserve_index=False,
         create='infer',
+        **kwargs
     ):
         """Load data into a table
 
@@ -120,16 +121,16 @@ class Connection(omnisci.Connection):
                 or isinstance(data, pa.Table)
                 or isinstance(data, pa.RecordBatch)
             ):  # noqa
-                return self.load_table_arrow(table_name, data, **kwargs)
+                return self.load_table_arrow(table_name, data, kwargs)
 
             elif isinstance(data, pd.DataFrame):
-                return self.load_table_columnar(table_name, data, **kwargs)
+                return self.load_table_columnar(table_name, data, kwargs)
 
         elif method == 'arrow':
-            return self.load_table_arrow(table_name, data, **kwargs)
+            return self.load_table_arrow(table_name, data, kwargs)
 
         elif method == 'columnar':
-            return self.load_table_columnar(table_name, data, **kwargs)
+            return self.load_table_columnar(table_name, data, kwargs)
 
         elif method != 'rows':
             raise TypeError(
@@ -443,7 +444,109 @@ class Connection(omnisci.Connection):
         )
         return result
 
+    # --------------------------------------------------------------------------
+    # Convenience methods
+    # --------------------------------------------------------------------------
+    def get_tables(self):
+        """List all the tables in the database
 
+        Examples
+        --------
+        >>> con.get_tables()
+        ['flights_2008_10k', 'stocks']
+        """
+        return self._client.get_tables(self._session)
+
+    def get_table_details(self, table_name):
+        """Get the column names and data types associated with a table.
+
+        Parameters
+        ----------
+        table_name: str
+
+        Returns
+        -------
+        details: List[tuples]
+
+        Examples
+        --------
+        >>> con.get_table_details('stocks')
+        [ColumnDetails(name='date_', type='STR', nullable=True, precision=0,
+                       scale=0, comp_param=32, encoding='DICT'),
+         ColumnDetails(name='trans', type='STR', nullable=True, precision=0,
+                       scale=0, comp_param=32, encoding='DICT'),
+         ...
+        ]
+        """
+        details = self._client.get_table_details(self._session, table_name)
+        return _extract_column_details(details.row_desc)
+
+    def get_dashboard(self, dashboard_id):
+        """Return the dashboard object of a specific dashboard
+
+        Examples
+        --------
+        >>> con.get_dashboard(123)
+        """
+        dashboard = self._client.get_dashboard(
+            session=self._session, dashboard_id=dashboard_id
+        )
+        return dashboard
+
+    def get_dashboards(self):
+        """List all the dashboards in the database
+
+        Examples
+        --------
+        >>> con.get_dashboards()
+        """
+        dashboards = self._client.get_dashboards(session=self._session)
+        return dashboards
+
+    def duplicate_dashboard(
+        self, dashboard_id, new_name=None, source_remap=None
+    ):
+        """
+        Duplicate an existing dashboard, returning the new dashboard id.
+
+        Parameters
+        ----------
+
+        dashboard_id: int
+            The id of the dashboard to duplicate
+        new_name: str
+            The name for the new dashboard
+        source_remap: dict
+            EXPERIMENTAL
+            A dictionary remapping table names. The old table name(s)
+            should be keys of the dict, with each value being another
+            dict with a 'name' key holding the new table value. This
+            structure can be used later to support changing column
+            names.
+
+        Examples
+        --------
+        >>> source_remap = {'oldtablename1': {'name': 'newtablename1'}, \
+'oldtablename2': {'name': 'newtablename2'}}
+        >>> newdash = con.duplicate_dashboard(12345, "new dash", source_remap)
+        """
+        source_remap = source_remap or {}
+        d = self._client.get_dashboard(
+            session=self._session, dashboard_id=dashboard_id
+        )
+
+        newdashname = new_name or '{0} (Copy)'.format(d.dashboard_name)
+        d = change_dashboard_sources(d, source_remap) if source_remap else d
+
+        new_dashboard_id = self._client.create_dashboard(
+            session=self._session,
+            dashboard_name=newdashname,
+            dashboard_state=d.dashboard_state,
+            image_hash='',
+            dashboard_metadata=d.dashboard_metadata,
+        )
+
+        return new_dashboard_id
 
     def render_vega(self, vega, compression_level=1):
         """Render vega data on the database backend,
