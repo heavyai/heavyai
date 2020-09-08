@@ -120,16 +120,16 @@ class Connection(omnisci.Connection):
                 or isinstance(data, pa.Table)
                 or isinstance(data, pa.RecordBatch)
             ):  # noqa
-                return self.load_table_arrow(table_name, data)
+                return self.load_table_arrow(table_name, data, **kwargs)
 
             elif isinstance(data, pd.DataFrame):
-                return self.load_table_columnar(table_name, data)
+                return self.load_table_columnar(table_name, data, **kwargs)
 
         elif method == 'arrow':
-            return self.load_table_arrow(table_name, data)
+            return self.load_table_arrow(table_name, data, **kwargs)
 
         elif method == 'columnar':
-            return self.load_table_columnar(table_name, data)
+            return self.load_table_columnar(table_name, data, **kwargs)
 
         elif method != 'rows':
             raise TypeError(
