@@ -2,7 +2,7 @@ import json
 from base64 import b64decode, b64encode
 
 
-def change_dashboard_sources(dashboard, remap):
+def _change_dashboard_sources(dashboard, remap):
     """
     Remap a dashboard to use a new table
     Parameters
