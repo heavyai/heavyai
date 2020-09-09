@@ -1401,79 +1401,86 @@ class TestLoaders:
 
     def test_dashboard_duplication_remap(self, con):
         # This test relies on the test_data_no_nulls_ipc table
-        # Setup our testing variables
-        old_dashboard_state = dashboard_metadata.old_dashboard_state
-        old_dashboard_name = dashboard_metadata.old_dashboard_name
-        new_dashboard_name = "new_test"
-        meta_data = {"table": "test_data_no_nulls_ipc", "version": "v2"}
-        remap = {
-            "test_data_no_nulls_ipc": {
-                "name": new_dashboard_name,
-                "title": new_dashboard_name,
+        for dashver in [2, 3]:
+            # Setup our testing variables
+            old_dashboard_state = getattr(dashboard_metadata, 'old_dashboard_state_v{0}'.format(dashver))
+            old_dashboard_name = dashboard_metadata.old_dashboard_name
+            new_dashboard_name = "new_test_v{0}".format(dashver)
+            meta_data = {"table": "test_data_no_nulls_ipc", "version": "v{0}".format(dashver)}
+            remap = {
+                "test_data_no_nulls_ipc": {
+                    "name": new_dashboard_name,
+                    "title": new_dashboard_name,
+                }
             }
-        }
-        dashboards = []
+            dashboards = []
 
-        # Create testing dashboard
-        try:
-            dashboard_id = con._client.create_dashboard(
-                session=con._session,
-                dashboard_name=old_dashboard_name,
-                dashboard_state=(
-                    base64.b64encode(
-                        json.dumps(old_dashboard_state).encode("utf-8")
-                    )
-                ),
-                image_hash="",
-                dashboard_metadata=json.dumps(meta_data),
+            # Create testing dashboard
+            try:
+                dashboard_id = con._client.create_dashboard(
+                    session=con._session,
+                    dashboard_name=old_dashboard_name,
+                    dashboard_state=(
+                        base64.b64encode(
+                            json.dumps(old_dashboard_state).encode("utf-8")
+                        )
+                    ),
+                    image_hash="",
+                    dashboard_metadata=json.dumps(meta_data),
+                )
+            except TOmniSciException:
+                dashboards = con._client.get_dashboards(con._session)
+                for dash in dashboards:
+                    if dash.dashboard_name == old_dashboard_name:
+                        con._client.delete_dashboard(
+                            con._session, dash.dashboard_id
+                        )
+                        break
+                dashboard_id = con._client.create_dashboard(
+                    session=con._session,
+                    dashboard_name=old_dashboard_name,
+                    dashboard_state=(
+                        base64.b64encode(
+                            json.dumps(old_dashboard_state).encode("utf-8")
+                        )
+                    ),
+                    image_hash="",
+                    dashboard_metadata=json.dumps(meta_data),
+                )
+
+            # Duplicate and remap our dashboard
+            try:
+                dashboard_id = con.duplicate_dashboard(
+                    dashboard_id, new_dashboard_name, remap
+                )
+            except TOmniSciException:
+                dashboards = con._client.get_dashboards(con._session)
+                for dash in dashboards:
+                    if dash.dashboard_name == new_dashboard_name:
+                        con._client.delete_dashboard(
+                            con._session, dash.dashboard_id
+                        )
+                        break
+                dashboard_id = con.duplicate_dashboard(
+                    dashboard_id, new_dashboard_name, remap
+                )
+
+            # Get our new dashboard from the database
+            d = con.get_dashboard(dashboard_id=dashboard_id)
+            remapped_dashboard = json.loads(
+                base64.b64decode(d.dashboard_state).decode()
             )
-        except TOmniSciException:
-            dashboards = con._client.get_dashboards(con._session)
-            for dash in dashboards:
-                if dash.dashboard_name == old_dashboard_name:
-                    con._client.delete_dashboard(
-                        con._session, dash.dashboard_id
-                    )
-                    break
-            dashboard_id = con._client.create_dashboard(
-                session=con._session,
-                dashboard_name=old_dashboard_name,
-                dashboard_state=(
-                    base64.b64encode(
-                        json.dumps(old_dashboard_state).encode("utf-8")
-                    )
-                ),
-                image_hash="",
-                dashboard_metadata=json.dumps(meta_data),
-            )
 
-        # Duplicate and remap our dashboard
-        try:
-            dashboard_id = con.duplicate_dashboard(
-                dashboard_id, new_dashboard_name, remap
-            )
-        except TOmniSciException:
-            dashboards = con._client.get_dashboards(con._session)
-            for dash in dashboards:
-                if dash.dashboard_name == new_dashboard_name:
-                    con._client.delete_dashboard(
-                        con._session, dash.dashboard_id
-                    )
-                    break
-            dashboard_id = con.duplicate_dashboard(
-                dashboard_id, new_dashboard_name, remap
-            )
-
-        # Get our new dashboard from the database
-        d = con.get_dashboard(dashboard_id=dashboard_id)
-        remapped_dashboard = json.loads(
-            base64.b64decode(d.dashboard_state).decode()
-        )
-
-        # Assert that the table and title changed
-        assert remapped_dashboard['dashboard']['title'] == new_dashboard_name
-
-        # Ensure the datasources change
-        for key, val in remapped_dashboard['dashboard']['dataSources'].items():
-            for col in val['columnMetadata']:
-                assert col['table'] == new_dashboard_name
+            # Assert that the table and title changed
+            if dashver == 2:
+                assert remapped_dashboard['dashboard']['title'] == new_dashboard_name
+                # Ensure the datasources change
+                for key, val in remapped_dashboard['dashboard']['dataSources'].items():
+                    for col in val['columnMetadata']:
+                        assert col['table'] == new_dashboard_name
+            else:
+                assert remapped_dashboard['tabs']['-MGoY-5OxdW3ANABL9PK']['dashboard']['title'] == new_dashboard_name
+                # Ensure the datasources change
+                for key, val in remapped_dashboard['tabs']['-MGoY-5OxdW3ANABL9PK']['dashboard']['dataSources'].items():
+                    for col in val['columnMetadata']:
+                        assert col['table'] == new_dashboard_name

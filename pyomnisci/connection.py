@@ -13,7 +13,7 @@ from thrift.transport import TSocket, TSSLSocket, THttpClient, TTransport
 from thrift.transport.TSocket import TTransportException
 from omnisci.thrift.OmniSci import Client, TCreateParams
 from omnisci.common.ttypes import TDeviceType
-from omnisci.thrift.ttypes import TOmniSciException, TFileType, TArrowTransport
+from omnisci.thrift.ttypes import TOmniSciException, TFileType, TDashboard, TArrowTransport
 
 from omnisci.cursor import Cursor
 from omnisci.exceptions import _translate_exception, OperationalError
@@ -22,7 +22,7 @@ from omnisci._parsers import _bind_parameters, _extract_column_details
 from ._utils import _parse_tdf_gpu
 
 from ._loaders import _build_input_rows
-from ._transforms import change_dashboard_sources
+from ._transforms import _change_dashboard_sources
 from .ipc import load_buffer, shmdt
 from ._pandas_loaders import build_row_desc, _serialize_arrow_payload
 from . import _pandas_loaders
@@ -518,6 +518,61 @@ class Connection(omnisci.Connection):
         dashboards = self._client.get_dashboards(session=self._session)
         return dashboards
 
+    def create_dashboard(self, dashboard: TDashboard) -> int:
+        """Create a new dashboard
+
+        Parameters
+        ----------
+
+            dashboard: TDashboard
+                The OmniSci dashboard object to create
+
+        Returns
+        -------
+            dashboardid: int
+                The dashboard id of the new dashboard
+        """
+        return self._client.create_dashboard(
+            session=self._session,
+            dashboard_name=dashboard.dashboard_name,
+            dashboard_state=dashboard.dashboard_state,
+            image_hash=dashboard.image_hash,
+            dashboard_metadata=dashboard.dashboard_metadata)
+
+    def change_dashboard_sources(self, dashboard: TDashboard, remap: dict) -> TDashboard:
+        """Change the sources of a dashboard
+
+        Parameters
+        ----------
+
+        dashboard: TDashboard
+            The OmniSci dashboard object to transform
+        remap: dict
+            EXPERIMENTAL
+            A dictionary remapping table names. The old table name(s)
+            should be keys of the dict, with each value being another
+            dict with a 'name' key holding the new table value. This
+            structure can be used later to support changing column
+            names.
+
+        Returns
+        -------
+        dashboard: TDashboard
+            An OmniSci dashboard with the sources remapped
+
+        Examples
+        --------
+        >>> source_remap = {'oldtablename1': {'name': 'newtablename1'}, \
+'oldtablename2': {'name': 'newtablename2'}}
+        >>> dash = con.get_dashboard(1)
+        >>> newdash = con.change_dashboard_sources(dash, source_remap)
+
+        See Also
+        --------
+        duplicate_dashboard
+        """
+        return _change_dashboard_sources(dashboard, remap)
+
     def duplicate_dashboard(
         self, dashboard_id, new_name=None, source_remap=None
     ):
@@ -551,17 +606,9 @@ class Connection(omnisci.Connection):
         )
 
         newdashname = new_name or '{0} (Copy)'.format(d.dashboard_name)
-        d = change_dashboard_sources(d, source_remap) if source_remap else d
-
-        new_dashboard_id = self._client.create_dashboard(
-            session=self._session,
-            dashboard_name=newdashname,
-            dashboard_state=d.dashboard_state,
-            image_hash='',
-            dashboard_metadata=d.dashboard_metadata,
-        )
-
-        return new_dashboard_id
+        d = self.change_dashboard_sources(d, source_remap) if source_remap else d
+        d.dashboard_name = newdashname
+        return self.create_dashboard(d)
 
     def render_vega(self, vega, compression_level=1):
         """Render vega data on the database backend,
@@ -585,7 +632,7 @@ class Connection(omnisci.Connection):
         )
         rendered_vega = RenderedVega(result)
         return rendered_vega
-
+    
 class RenderedVega:
     def __init__(self, render_result):
         self._render_result = render_result
