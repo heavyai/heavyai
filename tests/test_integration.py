@@ -4,6 +4,7 @@ Tests that rely on a server running
 import base64
 import json
 import datetime
+import os
 from unittest import mock
 
 import pytest
@@ -23,6 +24,8 @@ import shapely
 from shapely.geometry import Point, LineString, Polygon, MultiPolygon
 import textwrap
 from .conftest import no_gpu
+
+omniscihost = os.environ.get('OMNISCI_HOST', 'localhost')
 
 # XXX: Make it hashable to silence warnings; see if this can be done upstream
 # This isn't a huge deal, but our testing context mangers for asserting
@@ -59,7 +62,7 @@ class TestIntegration:
         con = connect(
             user="admin",
             password='HyperInteractive',
-            host='localhost',
+            host=omniscihost,
             port=6274,
             protocol='binary',
             dbname='omnisci',
@@ -70,7 +73,7 @@ class TestIntegration:
         con = connect(
             user="admin",
             password='HyperInteractive',
-            host='localhost',
+            host=omniscihost,
             port=6278,
             protocol='http',
             dbname='omnisci',
@@ -79,21 +82,21 @@ class TestIntegration:
 
     def test_connect_uri(self):
         uri = (
-            'omnisci://admin:HyperInteractive@localhost:6274/omnisci?'
-            'protocol=binary'
+            'omnisci://admin:HyperInteractive@{0}:6274/omnisci?'
+            'protocol=binary'.format(omniscihost)
         )
         con = connect(uri=uri)
         assert con._user == 'admin'
         assert con._password == 'HyperInteractive'
-        assert con._host == 'localhost'
+        assert con._host == omniscihost
         assert con._port == 6274
         assert con._dbname == 'omnisci'
         assert con._protocol == 'binary'
 
     def test_connect_uri_and_others_raises(self):
         uri = (
-            'omnisci://admin:HyperInteractive@localhost:6274/omnisci?'
-            'protocol=binary'
+            'omnisci://admin:HyperInteractive@{0}:6274/omnisci?'
+            'protocol=binary'.format(omniscihost)
         )
         with pytest.raises(TypeError):
             connect(username='omnisci', uri=uri)
