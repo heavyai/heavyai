@@ -25,7 +25,7 @@ def change_dashboard_sources(dashboard, remap):
     ds = json.loads(b64decode(dashboard.dashboard_state).decode())
 
     # If it's a 5.4 tabbed dashboard, iterate through the tabs
-    # otherwise conver the dashboard state as-is
+    # otherwise convert the dashboard state as-is
     if ds.get('tabs', None):
         for tabname, tabdef in ds.get('tabs').items():
             ds['tabs'][tabname] = _table_remap(tabdef, remap)
