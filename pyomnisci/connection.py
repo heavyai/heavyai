@@ -13,7 +13,7 @@ from thrift.transport import TSocket, TSSLSocket, THttpClient, TTransport
 from thrift.transport.TSocket import TTransportException
 from omnisci.thrift.OmniSci import Client, TCreateParams
 from omnisci.common.ttypes import TDeviceType
-from omnisci.thrift.ttypes import TOmniSciException, TFileType
+from omnisci.thrift.ttypes import TOmniSciException, TFileType, TArrowTransport
 
 from omnisci.cursor import Cursor
 from omnisci.exceptions import _translate_exception, OperationalError
@@ -32,8 +32,8 @@ from omnisci._samlutils import get_saml_response
 
 from packaging.version import Version
 
-class Connection(omnisci.Connection):
 
+class Connection(omnisci.Connection):
     def create_table(self, table_name, data, preserve_index=False):
         """Create a table from a pandas.DataFrame
 
@@ -345,7 +345,12 @@ class Connection(omnisci.Connection):
         return df
 
     def select_ipc(
-        self, operation, parameters=None, first_n=-1, release_memory=True
+        self,
+        operation,
+        parameters=None,
+        first_n=-1,
+        release_memory=True,
+        transport_method=TArrowTransport.WIRE,
     ):
         """Execute a ``SELECT`` operation using CPU shared memory
 
@@ -380,33 +385,44 @@ class Connection(omnisci.Connection):
             device_type=0,
             device_id=0,
             first_n=first_n,
+            transport_method=transport_method,
         )
         self._tdf = tdf
 
-        df_buf = load_buffer(tdf.df_handle, tdf.df_size)
+        if transport_method == TArrowTransport.WIRE:
+            reader = pa.ipc.open_stream(tdf.df_buffer)
+            tbl = reader.read_all()
+            df = tbl.to_pandas()
+            return df
 
-        reader = pa.ipc.open_stream(df_buf[0])
-        tbl = reader.read_all()
-        df = tbl.to_pandas()
+        elif transport_method == TArrowTransport.SHARED_MEMORY:
+            df_buf = load_buffer(tdf.df_handle, tdf.df_size)
+            reader = pa.ipc.open_stream(df_buf[0])
+            tbl = reader.read_all()
+            df = tbl.to_pandas()
 
-        # this is needed to modify the df object for deallocate_df to work
-        df.set_tdf = MethodType(set_tdf, df)
-        df.get_tdf = MethodType(get_tdf, df)
+            # this is needed to modify the df object for deallocate_df to work
+            df.set_tdf = MethodType(set_tdf, df)
+            df.get_tdf = MethodType(get_tdf, df)
 
-        # Because deallocate_df can be called any time in future, keep tdf
-        # from OmniSciDB so that it can be used whenever deallocate_df called
-        df.set_tdf(tdf)
+            # Because deallocate_df can be called any time in future, keep tdf
+            # from OmniSciDB so that it can be used whenever deallocate_df called
+            df.set_tdf(tdf)
 
-        # free shared memory from Python
-        # https://github.com/omnisci/pymapd/issues/46
-        # https://github.com/omnisci/pymapd/issues/31
-        free_df = shmdt(ctypes.cast(df_buf[1], ctypes.c_void_p))  # noqa
+            # free shared memory from Python
+            # https://github.com/omnisci/pymapd/issues/46
+            # https://github.com/omnisci/pymapd/issues/31
+            free_df = shmdt(ctypes.cast(df_buf[1], ctypes.c_void_p))  # noqa
 
-        # Deallocate TDataFrame at OmniSci instance
-        if release_memory:
-            self.deallocate_ipc(df)
+            # Deallocate TDataFrame at OmniSci instance
+            if release_memory:
+                self.deallocate_ipc(df)
 
-        return df
+            return df
+        else:
+            raise RuntimeError(
+                "The specified transport type is not supported. Only SHARED_MEMORY and WIRE are supported."
+            )
 
     def deallocate_ipc_gpu(self, df, device_id=0):
         """Deallocate a DataFrame using GPU memory.
@@ -583,6 +599,7 @@ class RenderedVega:
                 'alt="OmniSci Vega">'.format(self.image_data)
             ),
         }
+
 
 
 
