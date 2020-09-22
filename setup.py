@@ -36,10 +36,10 @@ extra_requires = {
 }
 
 setup(
-    name='pymapd',
+    name='pyomnisci',
     description='A DB API 2 compatible client for OmniSci (formerly MapD).',
     long_description=long_description,
-    url='https://github.com/omnisci/pymapd',
+    url='https://github.com/omnisci/pyomnisci',
     author='OmniSci',
     author_email='community@omnisci.com',
     license='Apache Software License',

@@ -21,8 +21,8 @@ from omnisci.exceptions import _translate_exception, OperationalError
 from omnisci._parsers import _bind_parameters, _extract_column_details
 from ._utils import _parse_tdf_gpu
 
-from omnisci._loaders import _build_input_rows
-from omnisci._transforms import change_dashboard_sources
+from ._loaders import _build_input_rows
+from ._transforms import change_dashboard_sources
 from .ipc import load_buffer, shmdt
 from ._pandas_loaders import build_row_desc, _serialize_arrow_payload
 from . import _pandas_loaders
@@ -167,6 +167,119 @@ class Connection(omnisci.Connection):
         """
         input_data = _build_input_rows(data)
         self._client.load_table(self._session, table_name, input_data)
+
+    def load_table_columnar(
+        self,
+        table_name,
+        data,
+        preserve_index=False,
+        chunk_size_bytes=0,
+        col_names_from_schema=False,
+    ):
+        """Load a pandas DataFrame to the database using OmniSci's Thrift-based
+        columnar format
+
+        Parameters
+        ----------
+        table_name: str
+        data: DataFrame
+        preserve_index: bool, default False
+            Whether to include the index of a pandas DataFrame when writing.
+        chunk_size_bytes: integer, default 0
+            Chunk the loading of columns to prevent large Thrift requests. A
+            value of 0 means do not chunk and send the dataframe as a single
+            request
+        col_names_from_schema: bool, default False
+            Read the existing table schema to determine the column names. This
+            will read the schema of an existing table in OmniSci and match
+            those names to the column names of the dataframe. This is for
+            user convenience when loading from data that is unordered,
+            especially handy when a table has a large number of columns.
+
+        Examples
+        --------
+        >>> df = pd.DataFrame({"a": [1, 2, 3], "b": ['d', 'e', 'f']})
+        >>> con.load_table_columnar('foo', df, preserve_index=False)
+
+        See Also
+        --------
+        load_table
+        load_table_arrow
+        load_table_rowwise
+
+        Notes
+        -----
+        Use ``pymapd >= 0.11.0`` while running with ``omnisci >= 4.6.0`` in
+        order to avoid loading inconsistent values into DATE column.
+        """
+
+        if not isinstance(data, pd.DataFrame):
+            raise TypeError('Unknown type {}'.format(type(data)))
+
+        table_details = self.get_table_details(table_name)
+        # Validate that there are the same number of columns in the table
+        # as there are in the dataframe. No point trying to load the data
+        # if this is not the case
+        if len(table_details) != len(data.columns):
+            raise ValueError(
+                'Number of columns in dataframe ({}) does not \
+                                match number of columns in OmniSci table \
+                                ({})'.format(
+                    len(data.columns), len(table_details)
+                )
+            )
+
+        col_names = (
+            [i.name for i in table_details]
+            if col_names_from_schema
+            else list(data)
+        )
+
+        col_types = table_details
+
+        input_cols = _pandas_loaders.build_input_columnar(
+            data,
+            preserve_index=preserve_index,
+            chunk_size_bytes=chunk_size_bytes,
+            col_types=col_types,
+            col_names=col_names,
+        )
+
+        for cols in input_cols:
+            self._client.load_table_binary_columnar(
+                self._session, table_name, cols
+            )
+
+    def load_table_arrow(self, table_name, data, preserve_index=False):
+        """Load a pandas.DataFrame or a pyarrow Table or RecordBatch to the
+        database using Arrow columnar format for interchange
+
+        Parameters
+        ----------
+        table_name: str
+        data: pandas.DataFrame, pyarrow.RecordBatch, pyarrow.Table
+        preserve_index: bool, default False
+            Whether to include the index of a pandas DataFrame when writing.
+
+        Examples
+        --------
+        >>> df = pd.DataFrame({"a": [1, 2, 3], "b": ['d', 'e', 'f']})
+        >>> con.load_table_arrow('foo', df, preserve_index=False)
+
+        See Also
+        --------
+        load_table
+        load_table_columnar
+        load_table_rowwise
+        """
+        metadata = self.get_table_details(table_name)
+        payload = _serialize_arrow_payload(
+            data, metadata, preserve_index=preserve_index
+        )
+        self._client.load_table_binary_arrow(
+            self._session, table_name, payload.to_pybytes()
+        )
+
 
     def select_ipc_gpu(
         self,
@@ -330,117 +443,149 @@ class Connection(omnisci.Connection):
         )
         return result
 
-    def load_table_columnar(
-        self,
-        table_name,
-        data,
-        preserve_index=False,
-        chunk_size_bytes=0,
-        col_names_from_schema=False,
+    # --------------------------------------------------------------------------
+    # Convenience methods
+    # --------------------------------------------------------------------------
+    def get_tables(self):
+        """List all the tables in the database
+
+        Examples
+        --------
+        >>> con.get_tables()
+        ['flights_2008_10k', 'stocks']
+        """
+        return self._client.get_tables(self._session)
+
+    def get_table_details(self, table_name):
+        """Get the column names and data types associated with a table.
+
+        Parameters
+        ----------
+        table_name: str
+
+        Returns
+        -------
+        details: List[tuples]
+
+        Examples
+        --------
+        >>> con.get_table_details('stocks')
+        [ColumnDetails(name='date_', type='STR', nullable=True, precision=0,
+                       scale=0, comp_param=32, encoding='DICT'),
+         ColumnDetails(name='trans', type='STR', nullable=True, precision=0,
+                       scale=0, comp_param=32, encoding='DICT'),
+         ...
+        ]
+        """
+        details = self._client.get_table_details(self._session, table_name)
+        return _extract_column_details(details.row_desc)
+
+    def get_dashboard(self, dashboard_id):
+        """Return the dashboard object of a specific dashboard
+
+        Examples
+        --------
+        >>> con.get_dashboard(123)
+        """
+        dashboard = self._client.get_dashboard(
+            session=self._session, dashboard_id=dashboard_id
+        )
+        return dashboard
+
+    def get_dashboards(self):
+        """List all the dashboards in the database
+
+        Examples
+        --------
+        >>> con.get_dashboards()
+        """
+        dashboards = self._client.get_dashboards(session=self._session)
+        return dashboards
+
+    def duplicate_dashboard(
+        self, dashboard_id, new_name=None, source_remap=None
     ):
-        """Load a pandas DataFrame to the database using OmniSci's Thrift-based
-        columnar format
+        """
+        Duplicate an existing dashboard, returning the new dashboard id.
 
         Parameters
         ----------
-        table_name: str
-        data: DataFrame
-        preserve_index: bool, default False
-            Whether to include the index of a pandas DataFrame when writing.
-        chunk_size_bytes: integer, default 0
-            Chunk the loading of columns to prevent large Thrift requests. A
-            value of 0 means do not chunk and send the dataframe as a single
-            request
-        col_names_from_schema: bool, default False
-            Read the existing table schema to determine the column names. This
-            will read the schema of an existing table in OmniSci and match
-            those names to the column names of the dataframe. This is for
-            user convenience when loading from data that is unordered,
-            especially handy when a table has a large number of columns.
+
+        dashboard_id: int
+            The id of the dashboard to duplicate
+        new_name: str
+            The name for the new dashboard
+        source_remap: dict
+            EXPERIMENTAL
+            A dictionary remapping table names. The old table name(s)
+            should be keys of the dict, with each value being another
+            dict with a 'name' key holding the new table value. This
+            structure can be used later to support changing column
+            names.
 
         Examples
         --------
-        >>> df = pd.DataFrame({"a": [1, 2, 3], "b": ['d', 'e', 'f']})
-        >>> con.load_table_columnar('foo', df, preserve_index=False)
-
-        See Also
-        --------
-        load_table
-        load_table_arrow
-        load_table_rowwise
-
-        Notes
-        -----
-        Use ``pymapd >= 0.11.0`` while running with ``omnisci >= 4.6.0`` in
-        order to avoid loading inconsistent values into DATE column.
+        >>> source_remap = {'oldtablename1': {'name': 'newtablename1'}, \
+'oldtablename2': {'name': 'newtablename2'}}
+        >>> newdash = con.duplicate_dashboard(12345, "new dash", source_remap)
         """
-
-        if not isinstance(data, pd.DataFrame):
-            raise TypeError('Unknown type {}'.format(type(data)))
-
-        table_details = self.get_table_details(table_name)
-        # Validate that there are the same number of columns in the table
-        # as there are in the dataframe. No point trying to load the data
-        # if this is not the case
-        if len(table_details) != len(data.columns):
-            raise ValueError(
-                'Number of columns in dataframe ({}) does not \
-                                match number of columns in OmniSci table \
-                                ({})'.format(
-                    len(data.columns), len(table_details)
-                )
-            )
-
-        col_names = (
-            [i.name for i in table_details]
-            if col_names_from_schema
-            else list(data)
+        source_remap = source_remap or {}
+        d = self._client.get_dashboard(
+            session=self._session, dashboard_id=dashboard_id
         )
 
-        col_types = table_details
+        newdashname = new_name or '{0} (Copy)'.format(d.dashboard_name)
+        d = change_dashboard_sources(d, source_remap) if source_remap else d
 
-        input_cols = _pandas_loaders.build_input_columnar(
-            data,
-            preserve_index=preserve_index,
-            chunk_size_bytes=chunk_size_bytes,
-            col_types=col_types,
-            col_names=col_names,
+        new_dashboard_id = self._client.create_dashboard(
+            session=self._session,
+            dashboard_name=newdashname,
+            dashboard_state=d.dashboard_state,
+            image_hash='',
+            dashboard_metadata=d.dashboard_metadata,
         )
 
-        for cols in input_cols:
-            self._client.load_table_binary_columnar(
-                self._session, table_name, cols
-            )
+        return new_dashboard_id
 
-    def load_table_arrow(self, table_name, data, preserve_index=False):
-        """Load a pandas.DataFrame or a pyarrow Table or RecordBatch to the
-        database using Arrow columnar format for interchange
+    def render_vega(self, vega, compression_level=1):
+        """Render vega data on the database backend,
+        returning the image as a PNG.
 
         Parameters
         ----------
-        table_name: str
-        data: pandas.DataFrame, pyarrow.RecordBatch, pyarrow.Table
-        preserve_index: bool, default False
-            Whether to include the index of a pandas DataFrame when writing.
 
-        Examples
-        --------
-        >>> df = pd.DataFrame({"a": [1, 2, 3], "b": ['d', 'e', 'f']})
-        >>> con.load_table_arrow('foo', df, preserve_index=False)
-
-        See Also
-        --------
-        load_table
-        load_table_columnar
-        load_table_rowwise
+        vega: dict
+            The vega specification to render.
+        compression_level: int
+            The level of compression for the rendered PNG. Ranges from
+            0 (low compression, faster) to 9 (high compression, slower).
         """
-        metadata = self.get_table_details(table_name)
-        payload = _serialize_arrow_payload(
-            data, metadata, preserve_index=preserve_index
+        result = self._client.render_vega(
+            self._session,
+            widget_id=None,
+            vega_json=vega,
+            compression_level=compression_level,
+            nonce=None,
         )
-        self._client.load_table_binary_arrow(
-            self._session, table_name, payload.to_pybytes()
-        )
+        rendered_vega = RenderedVega(result)
+        return rendered_vega
+
+class RenderedVega:
+    def __init__(self, render_result):
+        self._render_result = render_result
+        self.image_data = base64.b64encode(render_result.image).decode()
+
+    def _repr_mimebundle_(self, include=None, exclude=None):
+        return {
+            'image/png': self.image_data,
+            'text/html': (
+                '<img src="data:image/png;base64,{}" '
+                'alt="OmniSci Vega">'.format(self.image_data)
+            ),
+        }
+
+
+
 
 def connect(
     uri=None,
