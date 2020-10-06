@@ -40,7 +40,7 @@ def get_col_types(col_properties: dict):
     )
 
     return [
-        ColumnDetails(**properties, **common_col_params)
+        ColumnDetails(**{**common_col_params, **properties})
         for properties in col_properties
     ]
 
@@ -213,8 +213,18 @@ class TestLoaders:
                     {'name': 'a', 'type': 'INT', 'is_array': True},
                     {'name': 'b', 'type': 'DOUBLE', 'is_array': True},
                     {'name': 'c', 'type': 'INT', 'is_array': False},
-                    {'name': 'd', 'type': 'TIMESTAMP', 'is_array': False},
-                    {'name': 'e', 'type': 'TIMESTAMP', 'is_array': False},
+                    {
+                        'name': 'd',
+                        'type': 'TIMESTAMP',
+                        'is_array': False,
+                        'precision': 9,
+                    },
+                    {
+                        'name': 'e',
+                        'type': 'TIMESTAMP',
+                        'is_array': False,
+                        'precision': 0,
+                    }
                 ],
                 id='mult-cols-mix-array-not-null',
             ),
@@ -367,7 +377,14 @@ class TestLoaders:
             ColumnDetails(name='text_', type='STR', **common_col_params),
             ColumnDetails(name='time_', type='TIME', **common_col_params),
             ColumnDetails(
-                name='timestamp_', type='TIMESTAMP', **common_col_params
+                name='timestamp_',
+                type='TIMESTAMP',
+                nullable=True,
+                precision=0,
+                scale=0,
+                comp_param=0,
+                encoding='NONE',
+                is_array=False,
             ),
             ColumnDetails(name='date_', type='DATE', **common_col_params),
         ]
@@ -435,7 +452,6 @@ class TestLoaders:
     def test_build_table_columnar_nulls(self):
         common_col_params = dict(
             nullable=True,
-            precision=0,
             scale=0,
             comp_param=0,
             encoding='NONE',
@@ -443,17 +459,36 @@ class TestLoaders:
         )
 
         col_types = [
-            ColumnDetails(name='boolean_', type='BOOL', **common_col_params),
-            ColumnDetails(name='int_', type='INT', **common_col_params),
-            ColumnDetails(name='bigint_', type='BIGINT', **common_col_params),
-            ColumnDetails(name='double_', type='DOUBLE', **common_col_params),
-            ColumnDetails(name='varchar_', type='STR', **common_col_params),
-            ColumnDetails(name='text_', type='STR', **common_col_params),
-            ColumnDetails(name='time_', type='TIME', **common_col_params),
             ColumnDetails(
-                name='timestamp_', type='TIMESTAMP', **common_col_params
+                name='boolean_', type='BOOL', precision=0, **common_col_params
             ),
-            ColumnDetails(name='date_', type='DATE', **common_col_params),
+            ColumnDetails(
+                name='int_', type='INT', precision=0, **common_col_params
+            ),
+            ColumnDetails(
+                name='bigint_', type='BIGINT', precision=0, **common_col_params
+            ),
+            ColumnDetails(
+                name='double_', type='DOUBLE', precision=0, **common_col_params
+            ),
+            ColumnDetails(
+                name='varchar_', type='STR', precision=0, **common_col_params
+            ),
+            ColumnDetails(
+                name='text_', type='STR', precision=0, **common_col_params
+            ),
+            ColumnDetails(
+                name='time_', type='TIME', precision=0, **common_col_params
+            ),
+            ColumnDetails(
+                name='timestamp_',
+                type='TIMESTAMP',
+                **common_col_params,
+                precision=0,
+            ),
+            ColumnDetails(
+                name='date_', type='DATE', precision=0, **common_col_params
+            ),
         ]
 
         data = pd.DataFrame(
