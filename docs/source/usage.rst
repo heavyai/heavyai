@@ -1,12 +1,12 @@
 .. _usage:
 
-.. currentmodule:: pymapd
+.. currentmodule:: pyomnisci
 
 5-Minute Quickstart
 ===================
 
-``pymapd`` follows the python DB API 2.0, so experience with other Python database
-clients will feel similar to pymapd.
+``pyomnisci`` follows the python DB API 2.0, so experience with other Python database
+clients will feel similar to pyomnisci.
 
 .. note::
 
@@ -15,23 +15,23 @@ clients will feel similar to pymapd.
    dataset. This dataset can be obtained from the ``insert_sample_data`` script included
    in the OmniSci install directory.
 
-Installing pymapd
------------------
+Installing pyomnisci
+--------------------
 
-pymapd
-******
+pyomnisci
+*********
 
-``pymapd`` can be installed with conda using `conda-forge`_ or pip.
+``pyomnisci`` can be installed with conda using `conda-forge`_ or pip.
 
 .. code-block:: console
 
    # conda
-   conda install -c conda-forge pymapd
+   conda install -c conda-forge pyomnisci
 
    # pip
-   pip install pymapd
+   pip install pyomnisci
 
-If you have an NVIDIA GPU in the same machine where your pymapd code will be running, you'll want to `install
+If you have an NVIDIA GPU in the same machine where your pyomnisci code will be running, you'll want to `install
 cudf`_ as well to return results sets into GPU memory as a cudf GPU DataFrame:
 
 cudf via conda
@@ -72,7 +72,7 @@ To create a :class:`Connection` using the ``connect()`` method along with ``user
 
 .. code-block:: python
 
-   >>> from pymapd import connect
+   >>> from pyomnisci import connect
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
    ...               dbname="omnisci")
    >>> con
@@ -168,7 +168,7 @@ install, ``pandas.read_sql()`` works everywhere):
 
 .. code-block:: python
 
-   >>> from pymapd import connect
+   >>> from pyomnisci import connect
    >>> import pandas as pd
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
    ...               dbname="omnisci")
@@ -184,7 +184,7 @@ After connecting to OmniSci, a cursor can be created with :meth:`Connection.curs
 
    >>> c = con.cursor()
    >>> c
-   <pymapd.cursor.Cursor at 0x110fe6438>
+   <pyomnisci.cursor.Cursor at 0x110fe6438>
 
 Or by using a context manager:
 
@@ -192,14 +192,14 @@ Or by using a context manager:
 
    >>> with con as c:
    ...     print(c)
-   <pymapd.cursor.Cursor object at 0x1041f9630>
+   <pyomnisci.cursor.Cursor object at 0x1041f9630>
 
 Arbitrary SQL can be executed using :meth:`Cursor.execute`.
 
 .. code-block:: python
 
    >>> c.execute("SELECT depdelay, arrdelay FROM flights_2008_10k limit 100")
-   <pymapd.cursor.Cursor at 0x110fe6438>
+   <pyomnisci.cursor.Cursor at 0x110fe6438>
 
 This will set the ``rowcount`` property, with the number of returned rows
 

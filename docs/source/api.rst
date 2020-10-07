@@ -3,11 +3,11 @@
 API Reference
 =============
 
-.. automodule:: pymapd
+.. automodule:: pyomnisci
    :members: connect, Connection, Cursor
 
 Exceptions
 ----------
 
-.. automodule:: pymapd.exceptions
+.. automodule:: omnisci.exceptions
    :members: Error, InterfaceError, DatabaseError, OperationalError, IntegrityError, InternalError, ProgrammingError, NotSupportedError

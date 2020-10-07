@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# pymapd documentation build configuration file, created by
+# pyomnisci documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun 23 12:29:54 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -54,7 +54,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'pymapd'
+project = 'pyomnisci'
 copyright = '2019, OmniSci'
 author = 'Tom Augspurger'
 
@@ -109,7 +109,7 @@ html_static_path = []
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pymapddoc'
+htmlhelp_basename = 'pyomniscidoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -136,7 +136,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pymapd.tex', 'pymapd Documentation',
+    (master_doc, 'pyomnisci.tex', 'pyomnisci Documentation',
      'Tom Augspurger', 'manual'),
 ]
 
@@ -146,7 +146,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pymapd', 'pymapd Documentation',
+    (master_doc, 'pyomnisci', 'pyomnisci Documentation',
      [author], 1)
 ]
 
@@ -157,8 +157,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pymapd', 'pymapd Documentation',
-     author, 'pymapd', 'One line description of project.',
+    (master_doc, 'pyomnisci', 'pyomnisci Documentation',
+     author, 'pyomnisci', 'One line description of project.',
      'Miscellaneous'),
 ]
 

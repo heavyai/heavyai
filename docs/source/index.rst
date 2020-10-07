@@ -1,18 +1,18 @@
-.. pymapd documentation master file, created by
+.. pyomnisci documentation master file, created by
    sphinx-quickstart on Fri Jun 23 12:29:54 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-pymapd
-======
+pyomnisci
+=========
 
-The pymapd client interface provides a python DB API 2.0-compliant `OmniSci`_
+`pyomnisci` provides a python DB API 2.0-compliant `OmniSci`_
 interface (formerly MapD). In addition, it provides methods to get results in
 the `Apache Arrow`_-based `cudf GPU DataFrame`_ format for efficient data interchange.
 
 .. code-block:: python
 
-   >>> from pymapd import connect
+   >>> from pyomnisci import connect
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
    ...               dbname="omnisci")
    >>> df = con.select_ipc_gpu("SELECT depdelay, arrdelay"
