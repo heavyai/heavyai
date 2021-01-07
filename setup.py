@@ -14,10 +14,10 @@ install_requires = [
     'pyomniscidb >=5.5.0',
     'shapely',
     'sqlalchemy >= 1.3',
-    'pandas >= 1.1.0,<1.2.0',
+    'pandas >=1.0,<1.2.0dev0',  # keep consistency with cudf 0.15
     'packaging >= 20.0',
     'requests >= 2.23.0',
-    'numba >= 0.48',
+    'numba >= 0.49',  # keep consistency with cudf 0.15
 ]
 
 # Optional Requirements
@@ -42,7 +42,7 @@ setup(
     author='OmniSci',
     author_email='community@omnisci.com',
     license='Apache Software License',
-    python_requires='>=3.6',
+    python_requires='>=3.7,<3.9',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -50,8 +50,8 @@ setup(
         'Topic :: Scientific/Engineering',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
     packages=find_packages(),
