@@ -22,6 +22,9 @@ void setBuildStatus(String message, String state, String context, String commit_
 pipeline {
     agent none
     options { skipDefaultCheckout() }
+    environment {
+        OMNISCI_HOST = "${db_container_name}"
+    }
     stages {
         stage('Set pending status') {
             agent any
@@ -94,19 +97,6 @@ pipeline {
 
                             # Create docker network
                             docker network create pytest || true
-
-                            # Update test server endpoint with db container name
-                            #    NOTE: Single quotes (') have been replaced with <backslash><backslash>x27 to work in Jenkinsfile
-                            sed -i "s/TSocket(\\"localhost\\", 6274)/TSocket(\\"${db_container_name}\\", 6274)/" tests/conftest.py
-                            sed -i "s/host=\\x27localhost\\x27/host=\\x27${db_container_name}\\x27/" tests/conftest.py
-                            sed -i "s|@localhost:6274|@${db_container_name}:6274|" tests/test_integration.py
-                            sed -i "s|con._host == \\x27localhost\\x27|con._host == \\x27${db_container_name}\\x27|" tests/test_integration.py
-                            sed -i "s|host=\\x27localhost\\x27|host=\\x27${db_container_name}\\x27|" tests/test_integration.py
-                            sed -i "s/host=\\x27localhost\\x27/host=\\x27${db_container_name}\\x27/" tests/test_connection.py
-                            sed -i "s|@localhost:6274|@${db_container_name}:6274|" tests/test_connection.py
-                            sed -i "s/\"localhost\"/\"${db_container_name}\"/" tests/test_connection.py
-                            sed -i "s/host=\\x27localhost\\x27/host=\\x27${db_container_name}\\x27/" pymapd/connection.py
-                            sed -i "s|@localhost:6274|@${db_container_name}:6274|" pymapd/connection.py
                         """
                     }
                 }
