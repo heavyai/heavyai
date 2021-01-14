@@ -61,6 +61,7 @@ class Connection(omnisci.Connection):
         method='infer',
         preserve_index=False,
         create='infer',
+        column_names=list()
     ):
         """Load data into a table
 
@@ -143,9 +144,9 @@ class Connection(omnisci.Connection):
             data = data.itertuples(index=preserve_index, name=None)
 
         input_data = _build_input_rows(data)
-        self._client.load_table(self._session, table_name, input_data)
+        self._client.load_table(self._session, table_name, input_data, column_names)
 
-    def load_table_rowwise(self, table_name, data):
+    def load_table_rowwise(self, table_name, data, column_names=list()):
         """Load data into a table row-wise
 
         Parameters
@@ -166,7 +167,7 @@ class Connection(omnisci.Connection):
         >>> con.load_table('bar', data)
         """
         input_data = _build_input_rows(data)
-        self._client.load_table(self._session, table_name, input_data)
+        self._client.load_table(self._session, table_name, input_data, column_names)
 
     def load_table_columnar(
         self,
@@ -175,6 +176,7 @@ class Connection(omnisci.Connection):
         preserve_index=False,
         chunk_size_bytes=0,
         col_names_from_schema=False,
+        column_names=list()
     ):
         """Load a pandas DataFrame to the database using OmniSci's Thrift-based
         columnar format
@@ -247,10 +249,10 @@ class Connection(omnisci.Connection):
 
         for cols in input_cols:
             self._client.load_table_binary_columnar(
-                self._session, table_name, cols
+                self._session, table_name, cols, column_names
             )
 
-    def load_table_arrow(self, table_name, data, preserve_index=False):
+    def load_table_arrow(self, table_name, data, preserve_index=False, load_column_names=list()):
         """Load a pandas.DataFrame or a pyarrow Table or RecordBatch to the
         database using Arrow columnar format for interchange
 
@@ -277,7 +279,7 @@ class Connection(omnisci.Connection):
             data, metadata, preserve_index=preserve_index
         )
         self._client.load_table_binary_arrow(
-            self._session, table_name, payload.to_pybytes()
+            self._session, table_name, payload.to_pybytes(), load_column_names
         )
 
 

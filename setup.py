@@ -11,7 +11,7 @@ with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 install_requires = [
     'pyarrow == 0.17.1',
-    'pyomniscidb >=5.4.0',
+    'pyomniscidb >=5.5.0',
     'shapely',
     'sqlalchemy >= 1.3',
     'pandas >= 1.1.0,<1.2.0',
