@@ -26,7 +26,11 @@ import textwrap
 from .conftest import no_gpu
 from .data import dashboard_metadata
 
-omniscihost = os.environ.get('OMNISCI_HOST', 'localhost')
+db_host = os.getenv('OMNISCI_DB_HOST', 'localhost')
+db_port = int(os.getenv('OMNISCI_DB_PORT', '6274'))
+pw = 'HyperInteractive'
+db_uri = f'omnisci://admin:{pw}@{db_host}:{db_port}/omnisci?protocol=binary'
+
 
 # XXX: Make it hashable to silence warnings; see if this can be done upstream
 # This isn't a huge deal, but our testing context mangers for asserting
@@ -63,8 +67,8 @@ class TestIntegration:
         con = connect(
             user="admin",
             password='HyperInteractive',
-            host=omniscihost,
-            port=6274,
+            host=db_host,
+            port=db_port,
             protocol='binary',
             dbname='omnisci',
         )
@@ -74,38 +78,32 @@ class TestIntegration:
         con = connect(
             user="admin",
             password='HyperInteractive',
-            host=omniscihost,
-            port=6278,
+            host=db_host,
+            port=db_port + 4,  # 6278
             protocol='http',
             dbname='omnisci',
         )
         assert con is not None
 
     def test_connect_uri(self):
-        uri = (
-            'omnisci://admin:HyperInteractive@{0}:6274/omnisci?'
-            'protocol=binary'.format(omniscihost)
-        )
-        con = connect(uri=uri)
+        con = connect(uri=db_uri)
         assert con._user == 'admin'
         assert con._password == 'HyperInteractive'
-        assert con._host == omniscihost
-        assert con._port == 6274
+        assert con._host == db_host
+        assert con._port == db_port
         assert con._dbname == 'omnisci'
         assert con._protocol == 'binary'
 
     def test_connect_uri_and_others_raises(self):
-        uri = (
-            'omnisci://admin:HyperInteractive@{0}:6274/omnisci?'
-            'protocol=binary'.format(omniscihost)
-        )
         with pytest.raises(TypeError):
-            connect(username='omnisci', uri=uri)
+            connect(username='omnisci', uri=db_uri)
 
     def test_invalid_sql(self, con):
         with pytest.raises(ProgrammingError) as r:
             con.cursor().execute("this is invalid;")
-        r.match("Exception: Parse failed:")
+        r.match(
+            "SQL Error: Non-query expression encountered in illegal context"
+        )
 
     def test_nonexistant_table(self, con):
         with pytest.raises(DatabaseError) as r:

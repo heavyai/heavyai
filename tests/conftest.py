@@ -2,6 +2,7 @@ import os
 from uuid import uuid4
 
 import pytest
+import traceback
 from thrift.transport import TSocket, TTransport
 from thrift.transport.TSocket import TTransportException
 from pyomnisci import connect
@@ -11,20 +12,22 @@ import string
 import numpy as np
 import pandas as pd
 
-omniscihost = os.environ.get('OMNISCI_HOST', 'localhost')
+db_host = os.getenv('OMNISCI_DB_HOST', 'localhost')
+db_port = int(os.getenv('OMNISCI_DB_PORT', '6274'))
 
 
 def _check_open():
     """
     Test to see if OmniSci running on localhost and socket open
     """
-    socket = TSocket.TSocket(omniscihost, 6274)
+    socket = TSocket.TSocket(db_host, db_port)
     transport = TTransport.TBufferedTransport(socket)
 
     try:
         transport.open()
         return True
     except TTransportException:
+        traceback.print_exc()
         return False
 
 
@@ -35,9 +38,7 @@ def mapd_server():
         # already running before pytest started
         pass
     else:
-        raise RuntimeError(
-            "Unable to connect to OmniSci server at {}".format(omniscihost)
-        )
+        raise RuntimeError(f"Unable to connect to OmniSci server at {db_host}")
 
 
 @pytest.fixture(scope='session')
@@ -49,8 +50,8 @@ def con(mapd_server):
     return connect(
         user="admin",
         password='HyperInteractive',
-        host=omniscihost,
-        port=6274,
+        host=db_host,
+        port=db_port,
         protocol='binary',
         dbname='omnisci',
     )
