@@ -37,8 +37,6 @@ while [[ $# != 0 ]]; do
     *) usage "Unexpected argument: $1" ;;
     esac
 done
-echo $cpu_only
-echo $gpu_only
 
 build_test_cpu() {
     conda build --no-anaconda-upload \

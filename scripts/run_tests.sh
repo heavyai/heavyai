@@ -32,11 +32,15 @@ db_image= # docker image that hosts the OmniSciDB instance
 db_container_name="pyomnisci-db" # name of container the db instances runs in
 testscript_container_name="pyomnisci-test" # name of container the tests run in
 test_image_name="pyomnisci_test" # image to run the tests in
+cpu_only=0
+gpu_only=0
 
 # set docker image to run DB in
 while [[ $# != 0 ]]; do
     case $1 in
     -h|--help) usage ;;
+    --cpu-only) shift; cpu_only=1 ;;
+    --gpu-only) shift; gpu_only=1 ;;
     --db-image) shift; db_image=$1 ;;
     -|-?*) usage "Unknown option: $1" ;;
     *) usage "Unexpected argument: $1" ;;
@@ -81,7 +85,7 @@ create_docker_network() {
     docker network create net_pyomnisci || true
 }
 
-start_docker_cpu() {
+start_docker_db() {
     docker run \
         -d \
         --rm \
@@ -127,10 +131,14 @@ build_test_image
 
 create_docker_network
 
-start_docker_cpu
+start_docker_db
 
-test_pyomnisci --gpu-only
+if [[ gpu_only -ne 1 ]];then
+    test_pyomnisci --cpu-only
+fi
 
-test_pyomnisci --cpu-only
+if [[ cpu_only -ne 1 ]];then
+    test_pyomnisci --gpu-only
+fi
 
 cleanup

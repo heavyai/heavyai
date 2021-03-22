@@ -94,13 +94,40 @@ pipeline {
                         """
                     }
                 }
-                stage('Pytest - conda python') {
+                stage('Pytest - [CPU] - Conda') {
                     steps {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             script { stage_succeeded = false }
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
-                                $WORKSPACE/scripts/run_tests.sh --db-image omnisci/core-os-cpu-dev:master
+                                $WORKSPACE/scripts/run_tests.sh \
+                                    --db-image omnisci/core-os-cpu-dev:master \
+                                    --cpu-only
+                            """
+                            script { stage_succeeded = true }
+                        }
+                    }
+                    post {
+                        always {
+                            script {
+                                if (stage_succeeded == true) {
+                                    setBuildStatus("Build succeeded", "SUCCESS", "$STAGE_NAME", git_commit);
+                                } else {
+                                    setBuildStatus("Build failed", "FAILURE", "$STAGE_NAME", git_commit);
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('Pytest - [GPU] - Conda') {
+                    steps {
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                            script { stage_succeeded = false }
+                            setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
+                            sh """
+                                $WORKSPACE/scripts/run_tests.sh \
+                                    --db-image omnisci/core-os-cpu-dev:master \
+                                    --gpu-only
                             """
                             script { stage_succeeded = true }
                         }
