@@ -446,6 +446,7 @@ class TestIntegration:
         assert result == expected
         c.execute('drop table if exists dates;')
 
+
 class TestOptionalImports:
     def test_select_gpu(self, con):
         with mock.patch.dict(
@@ -1412,7 +1413,7 @@ class TestLoaders:
         # https://github.com/omnisci/pymapd/issues/263
 
         """Ensure that leading/trailing spaces in execute statements
-           don't cause issues
+        don't cause issues
         """
 
         c = con.cursor()
@@ -1436,15 +1437,19 @@ class TestLoaders:
 
         c.execute('drop table if exists test_leading_spaces;')
 
-
     def test_dashboard_duplication_remap(self, con):
         # This test relies on the test_data_no_nulls_ipc table
         for dashver in [2, 3]:
             # Setup our testing variables
-            old_dashboard_state = getattr(dashboard_metadata, 'old_dashboard_state_v{0}'.format(dashver))
+            old_dashboard_state = getattr(
+                dashboard_metadata, 'old_dashboard_state_v{0}'.format(dashver)
+            )
             old_dashboard_name = dashboard_metadata.old_dashboard_name
             new_dashboard_name = "new_test_v{0}".format(dashver)
-            meta_data = {"table": "test_data_no_nulls_ipc", "version": "v{0}".format(dashver)}
+            meta_data = {
+                "table": "test_data_no_nulls_ipc",
+                "version": "v{0}".format(dashver),
+            }
             remap = {
                 "test_data_no_nulls_ipc": {
                     "name": new_dashboard_name,
@@ -1511,14 +1516,26 @@ class TestLoaders:
 
             # Assert that the table and title changed
             if dashver == 2:
-                assert remapped_dashboard['dashboard']['title'] == new_dashboard_name
+                assert (
+                    remapped_dashboard['dashboard']['title']
+                    == new_dashboard_name
+                )
                 # Ensure the datasources change
-                for key, val in remapped_dashboard['dashboard']['dataSources'].items():
+                for key, val in remapped_dashboard['dashboard'][
+                    'dataSources'
+                ].items():
                     for col in val['columnMetadata']:
                         assert col['table'] == new_dashboard_name
             else:
-                assert remapped_dashboard['tabs']['-MGoY-5OxdW3ANABL9PK']['dashboard']['title'] == new_dashboard_name
+                assert (
+                    remapped_dashboard['tabs']['-MGoY-5OxdW3ANABL9PK'][
+                        'dashboard'
+                    ]['title']
+                    == new_dashboard_name
+                )
                 # Ensure the datasources change
-                for key, val in remapped_dashboard['tabs']['-MGoY-5OxdW3ANABL9PK']['dashboard']['dataSources'].items():
+                for key, val in remapped_dashboard['tabs'][
+                    '-MGoY-5OxdW3ANABL9PK'
+                ]['dashboard']['dataSources'].items():
                     for col in val['columnMetadata']:
                         assert col['table'] == new_dashboard_name
