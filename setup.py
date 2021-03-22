@@ -54,7 +54,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
-    packages=find_packages(),
+    packages=["pyomnisci"],
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
     install_requires=install_requires,
