@@ -9,7 +9,7 @@ set -o pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 WORKDIR="$DIR/.."
 
-cd $WORKDIR
+cd "$WORKDIR"
 
 usage() {
     local exitcode=0
@@ -21,13 +21,14 @@ usage() {
 Usage: $0 [OPTION]...
 Run pyomnisci tests
 Options:
-  --cpu-dockerimage IMAGE_NAME         Required.
-  -h, --help                          Print this help
+  --db-image IMAGE_NAME         Required.
+  --cpu-only                    Only build and test for CPU build.
+  --gpu-only                    Only build and test for GPU build.
+  -h, --help                    Print this help
 EOF
     exit "$exitcode"
 }
 
-args=()
 db_image= # docker image that hosts the OmniSciDB instance
 db_container_name="pyomnisci-db" # name of container the db instances runs in
 testscript_container_name="pyomnisci-test" # name of container the tests run in
@@ -39,8 +40,8 @@ gpu_only=0
 while [[ $# != 0 ]]; do
     case $1 in
     -h|--help) usage ;;
-    --cpu-only) shift; cpu_only=1 ;;
-    --gpu-only) shift; gpu_only=1 ;;
+    --cpu-only) cpu_only=1 ;;
+    --gpu-only) gpu_only=1 ;;
     --db-image) shift; db_image=$1 ;;
     -|-?*) usage "Unknown option: $1" ;;
     *) usage "Unexpected argument: $1" ;;
@@ -49,16 +50,9 @@ while [[ $# != 0 ]]; do
 done
 
 cleanup() {
-    docker rm -f $testscript_container_name || true
-    docker rm -f $db_container_name || true
+    docker rm -f $testscript_container_name &> /dev/null || true
+    docker rm -f $db_container_name &> /dev/null || true
 }
-
-# finish() {
-#     echo "Exiting..."
-#     cleanup
-#     exit 1
-# }
-# trap finish EXIT ERR
 
 fatal() {
     echo "fatal: $*" >&2
@@ -93,7 +87,7 @@ start_docker_db() {
         --ipc="shareable" \
         --network="net_pyomnisci" \
         --name $db_container_name \
-        $db_image \
+        "$db_image" \
         bash -c "\
             /omnisci/startomnisci \
                 --non-interactive \
@@ -124,7 +118,6 @@ test_pyomnisci() {
         $test_image_name \
         /pyomnisci/ci/build-conda.sh "$*"
 }
-
 cleanup
 
 build_test_image
