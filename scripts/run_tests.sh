@@ -35,11 +35,13 @@ testscript_container_name="pyomnisci-test" # name of container the tests run in
 test_image_name="pyomnisci_test" # image to run the tests in
 cpu_only=0
 gpu_only=0
+rbc_only=0
 
 # set docker image to run DB in
 while [[ $# != 0 ]]; do
     case $1 in
     -h|--help) usage ;;
+    --rbc-only) rbc_only=1 ;;
     --cpu-only) cpu_only=1 ;;
     --gpu-only) gpu_only=1 ;;
     --db-image) shift; db_image=$1 ;;
@@ -114,10 +116,28 @@ test_pyomnisci() {
         --network="net_pyomnisci" \
         --workdir="/pyomnisci" \
         --env OMNISCI_HOST="${db_container_name}" \
-        --name $testscript_container_name \
+        --name "${testscript_container_name}" \
         $test_image_name \
         /pyomnisci/ci/build-conda.sh "$*"
 }
+
+test_pyomnisci_rbc() {
+    # Forward args to build-conda.sh
+    # --cpu-only
+    # or
+    # --gpu-only
+    docker run \
+        --rm \
+        --ipc="container:${db_container_name}" \
+        --interactive \
+        --network="net_pyomnisci" \
+        --workdir="/pyomnisci" \
+        --env OMNISCI_HOST="${db_container_name}" \
+        --name "${testscript_container_name}_rbc" \
+        $test_image_name \
+        /pyomnisci/ci/test-rbc.sh
+}
+
 cleanup
 
 build_test_image
@@ -126,12 +146,16 @@ create_docker_network
 
 start_docker_db
 
-if [[ gpu_only -ne 1 ]];then
+if [[ gpu_only -eq 1 ]];then
+    test_pyomnisci --gpu-only
+fi
+
+if [[ cpu_only -eq 1 ]];then
     test_pyomnisci --cpu-only
 fi
 
-if [[ cpu_only -ne 1 ]];then
-    test_pyomnisci --gpu-only
+if [[ rbc_only -eq 1 ]];then
+    test_pyomnisci_rbc
 fi
 
 cleanup
