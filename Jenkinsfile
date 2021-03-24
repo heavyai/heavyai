@@ -11,7 +11,7 @@ def git_commit
 void setBuildStatus(String message, String state, String context, String commit_sha) {
   step([
       $class: "GitHubCommitStatusSetter",
-      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/omnisci/pymapd"],
+      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/omnisci/pyomnisci"],
       contextSource: [$class: "ManuallyEnteredCommitContextSource", context: context],
       commitShaSource: [$class: "ManuallyEnteredShaSource", sha: commit_sha],
       errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
@@ -22,9 +22,6 @@ void setBuildStatus(String message, String state, String context, String commit_
 pipeline {
     agent none
     options { skipDefaultCheckout() }
-    environment {
-        OMNISCI_HOST = "${db_container_name}"
-    }
     stages {
         stage('Set pending status') {
             agent any
@@ -38,10 +35,9 @@ pipeline {
                 }
                 // Set pending status manually for all jobs before node is started
                 setBuildStatus("Build queued", "PENDING", "Pre_commit_hook_check", git_commit);
-                setBuildStatus("Build queued", "PENDING", "Pytest - conda python3.7", git_commit);
-                setBuildStatus("Build queued", "PENDING", "Pytest - conda python3.8", git_commit);
-                setBuildStatus("Build queued", "PENDING", "Pytest - pip python3.7", git_commit);
-                setBuildStatus("Build queued", "PENDING", "RBC tests - conda python3.7", git_commit);
+                setBuildStatus("Build queued", "PENDING", "Pytest - [CPU] - Conda", git_commit);
+                setBuildStatus("Build queued", "PENDING", "Pytest - [GPU] - Conda", git_commit);
+                setBuildStatus("Build queued", "PENDING", "RBC tests - conda", git_commit);
             }
         }
         stage("Linter and Tests") {
@@ -94,52 +90,18 @@ pipeline {
                             docker pull $db_cuda_container_image
                             docker pull $db_cpu_container_image
                             docker pull $testscript_container_image
-
-                            # Create docker network
-                            docker network create pytest || true
                         """
                     }
                 }
-                stage('Pytest - conda python3.7') {
+                stage('Pytest - [CPU] - Conda') {
                     steps {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             script { stage_succeeded = false }
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
-                                docker run \
-                                  -d \
-                                  --rm \
-                                  --runtime=nvidia \
-                                  --ipc="shareable" \
-                                  --network="pytest" \
-                                  -p 6273 \
-                                  --name $db_container_name \
-                                  $db_cuda_container_image \
-                                  bash -c "/omnisci/startomnisci \
-                                    --non-interactive \
-                                    --data /omnisci-storage/data \
-                                    --config /omnisci-storage/omnisci.conf \
-                                    --enable-runtime-udf \
-                                    --enable-table-functions \
-                                  "
-                                sleep 3
-
-                                docker run \
-                                  --rm \
-                                  --runtime=nvidia \
-                                  --ipc="container:${db_container_name}" \
-                                  --network="pytest" \
-                                  -v $WORKSPACE:/pymapd \
-                                  --workdir="/pymapd" \
-                                  --name $testscript_container_name \
-                                  $testscript_container_image \
-                                  bash -c '\
-                                    PYTHON=3.7 ./ci/install-test-deps-conda.sh && \
-                                    source /opt/conda/bin/activate omnisci-gpu-dev && \
-                                    pytest tests'
-
-                                docker rm -f $testscript_container_name || true
-                                docker rm -f $db_container_name || true
+                                $WORKSPACE/scripts/run_tests.sh \
+                                    --db-image omnisci/core-os-cpu-dev:master \
+                                    --cpu-only
                             """
                             script { stage_succeeded = true }
                         }
@@ -150,56 +112,21 @@ pipeline {
                                 if (stage_succeeded == true) {
                                     setBuildStatus("Build succeeded", "SUCCESS", "$STAGE_NAME", git_commit);
                                 } else {
-                                    sh """
-                                        docker rm -f $testscript_container_name || true
-                                        docker rm -f $db_container_name || true
-                                    """
                                     setBuildStatus("Build failed", "FAILURE", "$STAGE_NAME", git_commit);
                                 }
                             }
                         }
                     }
                 }
-                stage('Pytest - conda python3.8') {
+                stage('Pytest - [GPU] - Conda') {
                     steps {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             script { stage_succeeded = false }
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
-                                docker run \
-                                  -d \
-                                  --rm \
-                                  --runtime=nvidia \
-                                  --ipc="shareable" \
-                                  --network="pytest" \
-                                  -p 6273 \
-                                  --name $db_container_name \
-                                  $db_cuda_container_image \
-                                  bash -c "/omnisci/startomnisci \
-                                    --non-interactive \
-                                    --data /omnisci-storage/data \
-                                    --config /omnisci-storage/omnisci.conf \
-                                    --enable-runtime-udf \
-                                    --enable-table-functions \
-                                  "
-                                sleep 3
-
-                                docker run \
-                                  --rm \
-                                  --runtime=nvidia \
-                                  --ipc="container:${db_container_name}" \
-                                  --network="pytest" \
-                                  -v $WORKSPACE:/pymapd \
-                                  --workdir="/pymapd" \
-                                  --name $testscript_container_name \
-                                  $testscript_container_image \
-                                  bash -c '\
-                                    PYTHON=3.8 ./ci/install-test-deps-conda.sh && \
-                                    source /opt/conda/bin/activate omnisci-gpu-dev && \
-                                    pytest tests'
-
-                                docker rm -f $testscript_container_name || true
-                                docker rm -f $db_container_name || true
+                                $WORKSPACE/scripts/run_tests.sh \
+                                    --db-image omnisci/core-os-cpu-dev:master \
+                                    --gpu-only
                             """
                             script { stage_succeeded = true }
                         }
@@ -210,59 +137,21 @@ pipeline {
                                 if (stage_succeeded == true) {
                                     setBuildStatus("Build succeeded", "SUCCESS", "$STAGE_NAME", git_commit);
                                 } else {
-                                    sh """
-                                        docker rm -f $testscript_container_name || true
-                                        docker rm -f $db_container_name || true
-                                    """
                                     setBuildStatus("Build failed", "FAILURE", "$STAGE_NAME", git_commit);
                                 }
                             }
                         }
                     }
                 }
-                stage('RBC tests - conda python3.7') {
+                stage('RBC tests - conda') {
                     steps {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             script { stage_succeeded = false }
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
-                                docker run \
-                                  -d \
-                                  --ipc="shareable" \
-                                  --network="pytest" \
-                                  -p 6274 \
-                                  --name $db_container_name \
-                                  $db_cpu_container_image \
-                                  bash -c "/omnisci/startomnisci \
-                                    --non-interactive \
-                                    --data /omnisci-storage/data \
-                                    --config /omnisci-storage/omnisci.conf \
-                                    --enable-runtime-udf \
-                                    --enable-table-functions \
-                                  "
-                                sleep 3
-
-                                docker run \
-                                  --rm \
-                                  --runtime=nvidia \
-                                  --ipc="container:${db_container_name}" \
-                                  --network="pytest" \
-                                  -v $WORKSPACE:/pymapd \
-                                  --workdir="/workdir" \
-                                  --name $testscript_container_name \
-                                  $testscript_container_image \
-                                  bash -c '\
-                                    . ~/.bashrc && \
-                                    conda install python=3.7 -y && \
-                                    git clone https://github.com/xnd-project/rbc && \
-                                    pushd rbc && \
-                                    conda env create --file=.conda/environment.yml && \
-                                    source /opt/conda/bin/activate rbc && \
-                                    OMNISCI_CLIENT_CONF=/pymapd/rbc.conf pytest -v -r s rbc/ -x \
-                                  '
-
-                                docker rm -f $testscript_container_name || true
-                                docker rm -f $db_container_name || true
+                                $WORKSPACE/scripts/run_tests.sh \
+                                    --db-image omnisci/core-os-cpu-dev:master \
+                                    --rbc-only
                             """
                             script { stage_succeeded = true }
                         }
@@ -273,68 +162,6 @@ pipeline {
                                 if (stage_succeeded == true) {
                                     setBuildStatus("Build succeeded", "SUCCESS", "$STAGE_NAME", git_commit);
                                 } else {
-                                    sh """
-                                        docker rm -f $testscript_container_name || true
-                                        docker rm -f $db_container_name || true
-                                    """
-                                    setBuildStatus("Build failed", "FAILURE", "$STAGE_NAME", git_commit);
-                                }
-                            }
-                        }
-                    }
-                }
-                stage('Pytest - pip python3.7') {
-                    steps {
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            script { stage_succeeded = false }
-                            setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
-                            sh """
-                                docker run \
-                                  -d \
-                                  --rm \
-                                  --runtime=nvidia \
-                                  --ipc="shareable" \
-                                  --network="pytest" \
-                                  -p 6273 \
-                                  --name $db_container_name \
-                                  $db_cuda_container_image \
-                                  bash -c "/omnisci/startomnisci \
-                                    --non-interactive \
-                                    --data /omnisci-storage/data \
-                                    --config /omnisci-storage/omnisci.conf \
-                                    --enable-runtime-udf \
-                                    --enable-table-functions \
-                                  "
-                                sleep 3
-                                docker run \
-                                  --rm \
-                                  --runtime=nvidia \
-                                  --ipc="container:${db_container_name}" \
-                                  --network="pytest" \
-                                  -v $WORKSPACE:/pymapd \
-                                  --workdir="/pymapd" \
-                                  --name $testscript_container_name \
-                                  $testscript_container_image \
-                                  bash -c '\
-                                    PYTHON=3.7 ./ci/install-test-deps-pip.sh && \
-                                    source /opt/conda/bin/activate omnisci-dev-pip && \
-                                    pytest tests'
-                                docker rm -f $testscript_container_name || true
-                                docker rm -f $db_container_name || true
-                            """
-                            script { stage_succeeded = true }
-                        }
-                    }
-                    post {
-                        always {
-                            script {
-                                if (stage_succeeded == true) {
-                                    setBuildStatus("Build succeeded", "SUCCESS", "$STAGE_NAME", git_commit);
-                                } else {
-                                    sh """
-                                        docker rm -f $testscript_container_name || true
-                                        docker rm -f $db_container_name || true
-                                    """
                                     setBuildStatus("Build failed", "FAILURE", "$STAGE_NAME", git_commit);
                                 }
                             }

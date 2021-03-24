@@ -5,10 +5,10 @@ channels:
 - nvidia
 - rapidsai
 dependencies:
-- cudf=0.15
-- cudatoolkit=11.0
+- cudf
+- cudatoolkit=10.1
 - python >=3.7.0,<3.9
-- pyarrow<=2.0
+- pyarrow==3.0.0
 - pandas
 # related: https://github.com/conda-forge/pillow-feedstock/issues/73
 - libtiff=4.0.10
@@ -25,4 +25,3 @@ dependencies:
 - sphinx
 - sphinx_rtd_theme
 - requests
-- 'rbc==0.2.2'

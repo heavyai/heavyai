@@ -1,7 +1,7 @@
 import os
 from codecs import open
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -10,7 +10,7 @@ with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 install_requires = [
-    'pyarrow <= 2.0',
+    'pyarrow == 3.0.0',
     'pyomniscidb >=5.5.0',
     'shapely',
     'sqlalchemy >= 1.3',
@@ -54,7 +54,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
-    packages=find_packages(),
+    packages=["pyomnisci"],
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
     install_requires=install_requires,

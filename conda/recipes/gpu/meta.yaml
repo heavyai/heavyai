@@ -1,0 +1,66 @@
+{% set name = "pyomnisci" %}
+{% set version = "0.27.0" %}
+
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: ../../..
+
+build:
+  number: 0
+  noarch: python
+  script: $PYTHON setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+  host:
+    - python
+    - pip
+    - setuptools
+    - setuptools_scm
+    - git
+  run:
+    - python
+    - {{ pin_compatible('numpy', lower_bound='1.16') }}
+    - pyomniscidb
+    - pandas
+    - cudf ==0.18
+    - pyarrow <=3.0
+    - shapely
+  
+# test:
+#   imports:
+#     - pyomnisci
+
+test:
+  source_files:
+    - tests
+  requires:
+    - pytest
+    - coverage
+    - pytest-mock
+    - geopandas
+  commands:
+    - "pytest tests/"
+
+about:
+  home: http://github.com/omnisci/pyomnisci
+  license: Apache-2.0
+  license_family: Apache
+  license_file: LICENSE.md
+  summary: A python DB API 2 compatible client for OmniSci (formerly MapD).
+  description: |
+    A python DB API 2 compatible client for OmniSci (formerly MapD).
+  doc_url: https://pyomnisci.readthedocs.io
+  dev_url: https://github.com/omnisci/pyomnisci
+
+extra:
+  recipe-maintainers:
+    - TomAugspurger
+    - andrewseidl
+    - xhochy
+    - xmnlab
+    - jclay
+    - alexbaden

@@ -2,12 +2,8 @@
 pyomnisci
 =========
 
-.. image:: https://readthedocs.org/projects/pyomnisci/badge/?version=latest
-   :target: http://pyomnisci.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
-
-.. image:: https://jenkins-os.mapd.com/buildStatus/icon?job=pymapd-tests
-   :target: https://jenkins-os.mapd.com/job/pymapd-tests/
+.. image:: https://jenkins-os.mapd.com/buildStatus/icon?job=pyomnisci-tests-pr
+   :target: https://jenkins-os.mapd.com/job/pyomnisci-tests-pr/
    :alt: Jenkins Build Status
 
 This package enables using common Python data science toolkits with `OmniSciDB`. It brings data frame 
@@ -31,7 +27,12 @@ pymapd with GPU capabilities.
 To install pymapd and cudf for GPU Dataframe support (conda-only)::
 
    conda create -n omnisci-gpu -c rapidsai -c nvidia -c conda-forge \
-    -c defaults cudf=0.15 python=3.7 cudatoolkit=10.2 pyomnisci
+    -c defaults cudf=0.18 python=3.7 cudatoolkit=11.0 pyomnisci
+   
+Documentation
+-------------
+
+Further documentation for pyomnisci usage is available at: http://pyomnisci.readthedocs.io/
 
 .. _DB API: https://www.python.org/dev/peps/pep-0249/
 .. _OmniSci: https://www.omnisci.com/

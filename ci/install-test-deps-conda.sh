@@ -1,26 +1,64 @@
 #!/bin/bash
 
-echo
-echo "[conda build]"
-conda install -q conda-build anaconda-client conda-verify --yes
+set -o errexit   # abort on nonzero exitstatus
+# set -o nounset   # abort on unbound variable
+set -o pipefail  # don't hide errors within pipes
 
-if [ "$CPU_ONLY" = true ] ; then
-    ENV_FILE=./environment.yml
-    ENV_NAME=omnisci-dev
-else
-    ENV_FILE=./environment_gpu.yml
-    ENV_NAME=omnisci-gpu-dev
-fi
+eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
+
+conda install -y mamba
+
+PROJECT_ROOT=/pymapd
+PYTHON=3.7
+CPU_ONLY=true 
+pushd $PROJECT_ROOT
+
+function print_status() {
+    printf "STATUS %s" "$1"
+}
+
+function build_conda_env() {
+    print_status "Building conda env"
+    env_file="$PROJECT_ROOT/environment.yml"
+    env_name=omnisci-dev
+    sed -E "s/- python[^[:alpha:]]+$/- python=$PYTHON/" ${env_file} > "/tmp/${env_name}_${PYTHON}.yml"
+
+    cat "/tmp/${env_name}_${PYTHON}.yml"
+
+    mamba env create -f "/tmp/${env_name}_${PYTHON}.yml"
+
+    conda activate "${env_name}"
+
+    conda install -y git conda-build \
+        conda-forge::binutils_impl_linux-64 \
+        conda-forge::binutils_linux-64 \
+        conda-forge::gcc_impl_linux-64 \
+        conda-forge::gcc_linux-64 \
+        conda-forge::gxx_impl_linux-64 \
+        conda-forge::gxx_linux-64 \
+        conda-forge::libgcc-ng \
+        conda-forge::libstdcxx-ng && \
+        conda env list && \
+        conda list "${env_name}" && \
+        which python && \
+        which gcc && \
+        pip install -e .
+}
+
+build_conda_env
+# if [ "$CPU_ONLY" = true ] ; then
+# else
+#     ENV_FILE="$PROJECT_ROOT/environment_gpu.yml"
+#     ENV_NAME=omnisci-gpu-dev
+# fi
+
 
 # create a copy of the environment file, replacing
 # with the python version we specify.
-sed -E "s/- python[^[:alpha:]]+$/- python=$PYTHON/" ${ENV_FILE} > /tmp/${ENV_NAME}_${PYTHON}.yml
 
-conda env create -f /tmp/${ENV_NAME}_${PYTHON}.yml
 
-conda activate ${ENV_NAME}
+# /opt/conda/bin/activate ${ENV_NAME}
 
-pip install -e .
-conda list ${ENV_NAME}
-echo
-exit 0
+
+# echo
+# exit 0
