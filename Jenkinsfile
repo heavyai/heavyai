@@ -35,10 +35,9 @@ pipeline {
                 }
                 // Set pending status manually for all jobs before node is started
                 setBuildStatus("Build queued", "PENDING", "Pre_commit_hook_check", git_commit);
-                setBuildStatus("Build queued", "PENDING", "Pytest - conda python3.7", git_commit);
-                setBuildStatus("Build queued", "PENDING", "Pytest - conda python3.8", git_commit);
-                setBuildStatus("Build queued", "PENDING", "Pytest - pip python3.7", git_commit);
-                setBuildStatus("Build queued", "PENDING", "RBC tests - conda python3.7", git_commit);
+                setBuildStatus("Build queued", "PENDING", "Pytest - [CPU] - Conda", git_commit);
+                setBuildStatus("Build queued", "PENDING", "Pytest - [GPU] - Conda", git_commit);
+                setBuildStatus("Build queued", "PENDING", "RBC tests - conda", git_commit);
             }
         }
         stage("Linter and Tests") {
