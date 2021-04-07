@@ -1,9 +1,9 @@
 name: omnisci-gpu-dev
 channels:
+- rapidsai
+- nvidia
 - conda-forge
 - defaults
-- nvidia
-- rapidsai
 dependencies:
 - cudf
 - cudatoolkit=10.1
