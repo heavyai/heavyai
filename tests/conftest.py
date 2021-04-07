@@ -1,6 +1,4 @@
 import os
-import subprocess
-import time
 from uuid import uuid4
 
 import pytest
