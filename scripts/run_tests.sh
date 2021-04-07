@@ -68,7 +68,7 @@ error() {
 ready=1
 if ! [[ "$db_image" ]]; then
     ready=
-    error "Required parameter missing: CPU docker image. Specify it using --cpu-dockerimage"
+    error "Required parameter missing: CPU docker image. Specify it using --db-image"
 fi
 
 [[ "$ready" ]] || exit 1
@@ -146,12 +146,18 @@ create_docker_network
 
 start_docker_db
 
+
 if [[ gpu_only -eq 1 ]];then
     test_pyomnisci --gpu-only
 fi
 
 if [[ cpu_only -eq 1 ]];then
+    docker ps
+    docker logs $db_container_name
+
     test_pyomnisci --cpu-only
+
+    docker logs $db_container_name
 fi
 
 if [[ rbc_only -eq 1 ]];then
