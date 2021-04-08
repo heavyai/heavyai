@@ -101,7 +101,7 @@ pipeline {
                             sh """
                                 docker ps
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image $db_cpu_container_image \
+                                    --db-image $db_cuda_container_image \
                                     --cpu-only
                                 docker ps
                             """
