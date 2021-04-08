@@ -94,7 +94,6 @@ start_docker_db() {
             /omnisci/startomnisci \
                 --non-interactive \
                 --data /omnisci-storage/data \
-                --config /omnisci-storage/omnisci.conf \
                 --enable-runtime-udf \
                 --enable-table-functions \
         "
@@ -145,7 +144,6 @@ build_test_image
 create_docker_network
 
 start_docker_db
-
 
 if [[ gpu_only -eq 1 ]];then
     test_pyomnisci --gpu-only
