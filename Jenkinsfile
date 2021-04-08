@@ -99,11 +99,9 @@ pipeline {
                             script { stage_succeeded = false }
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
-                                docker ps
                                 $WORKSPACE/scripts/run_tests.sh \
                                     --db-image $db_cuda_container_image \
                                     --cpu-only
-                                docker ps
                             """
                             script { stage_succeeded = true }
                         }

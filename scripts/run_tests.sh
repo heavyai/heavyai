@@ -150,16 +150,20 @@ if [[ gpu_only -eq 1 ]];then
 fi
 
 if [[ cpu_only -eq 1 ]];then
-    docker ps
-    docker logs $db_container_name
-
     test_pyomnisci --cpu-only
 
-    docker logs $db_container_name
 fi
 
 if [[ rbc_only -eq 1 ]];then
     test_pyomnisci_rbc
 fi
 
+echo "======================"
+echo "  DB Container Logs"
+echo "======================"
+docker logs $db_container_name
+
+echo "======================"
+echo "  Starting Cleanup"
+echo "======================"
 cleanup
