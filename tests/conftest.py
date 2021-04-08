@@ -35,7 +35,9 @@ def mapd_server():
         # already running before pytest started
         pass
     else:
-        raise RuntimeError("Unable to connect to OmniSci server at {}".format(omniscihost))
+        raise RuntimeError(
+            "Unable to connect to OmniSci server at {}".format(omniscihost)
+        )
 
 
 @pytest.fixture(scope='session')
