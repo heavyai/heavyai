@@ -97,14 +97,26 @@ create_docker_network() {
 }
 
 start_docker_db() {
-    docker run \
+    params=()
+
+    if [[ gpu_only -eq 1 ]];then
+        params+=(--runtime=nvidia)
+    fi
+
+    params+=( \
         -d \
         --rm \
         -p 6273 \
-        --ipc="shareable" \
-        --network="net_pyomnisci" \
-        --name $db_container_name \
+        '--ipc=shareable' \
+        "--network=net_pyomnisci" \
+        "--name=$db_container_name" \
         "$db_image" \
+    )
+
+
+    echo "Launching docker run with args: ${params[@]}"
+
+    docker run "${params[@]}" \
         bash -c "\
             /omnisci/startomnisci \
                 --non-interactive \
@@ -112,6 +124,8 @@ start_docker_db() {
                 --enable-runtime-udf \
                 --enable-table-functions \
         "
+
+    timeout 10s docker logs -f "$db_container_name" || true
     return $?
 }
 
