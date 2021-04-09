@@ -56,13 +56,28 @@ cleanup() {
     docker rm -f $db_container_name &> /dev/null || true
 }
 
-fatal() {
-    echo "fatal: $*" >&2
-    exit 1
+print_db_logs() {
+    echo "=========================="
+    echo "  Begin DB Container Logs "
+    echo "=========================="
+    echo ""
+
+    docker logs $db_container_name
+
+    echo ""
+    echo "=========================="
+    echo "  End DB Container Logs "
+    echo "=========================="
 }
 
-error() {
-    echo "error: $*" >&2
+exit_on_error() {
+    echo "=================================="
+    echo "  Failed with error code: $*" >&2
+    echo "  Showing DB logs before exiting"
+    echo "=================================="
+    print_db_logs
+    cleanup
+    exit 1
 }
 
 ready=1
@@ -97,6 +112,7 @@ start_docker_db() {
                 --enable-runtime-udf \
                 --enable-table-functions \
         "
+    return $?
 }
 
 build_test_image() {
@@ -144,29 +160,29 @@ build_test_image
 
 create_docker_network
 
-start_docker_db
-
 # disable exit on error, so we still
 # get logs + perform cleanup
 set +o errexit 
 
+start_docker_db || exit_on_error "$?"
+
+sleep 5
+
+# Check that our db startup was successful.
+print_db_logs
+
 if [[ gpu_only -eq 1 ]];then
-    test_pyomnisci --gpu-only || echo "Build failed, cleaning up..."
+    test_pyomnisci --gpu-only || exit_on_error "$?"
 fi
 
 if [[ cpu_only -eq 1 ]];then
-    test_pyomnisci --cpu-only || echo "Build failed, cleaning up..."
+    test_pyomnisci --cpu-only || exit_on_error "$?"
 
 fi
 
 if [[ rbc_only -eq 1 ]];then
-    test_pyomnisci_rbc
+    test_pyomnisci_rbc || exit_on_error "$?"
 fi
-
-echo "======================"
-echo "  DB Container Logs"
-echo "======================"
-docker logs $db_container_name
 
 echo "======================"
 echo "  Starting Cleanup"
