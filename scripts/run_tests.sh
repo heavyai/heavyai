@@ -118,6 +118,7 @@ test_pyomnisci() {
         --name "${testscript_container_name}" \
         $test_image_name \
         /pyomnisci/ci/build-conda.sh "$*"
+    return $?
 }
 
 test_pyomnisci_rbc() {
@@ -145,12 +146,16 @@ create_docker_network
 
 start_docker_db
 
+# disable exit on error, so we still
+# get logs + perform cleanup
+set +o errexit 
+
 if [[ gpu_only -eq 1 ]];then
-    test_pyomnisci --gpu-only
+    test_pyomnisci --gpu-only || echo "Build failed, cleaning up..."
 fi
 
 if [[ cpu_only -eq 1 ]];then
-    test_pyomnisci --cpu-only
+    test_pyomnisci --cpu-only || echo "Build failed, cleaning up..."
 
 fi
 
