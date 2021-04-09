@@ -125,6 +125,7 @@ start_docker_db() {
                 --enable-table-functions \
         "
 
+    # Tail logs for 10s to ensure that our db startup was successful.
     timeout 10s docker logs -f "$db_container_name" || true
     return $?
 }
@@ -179,11 +180,6 @@ create_docker_network
 set +o errexit 
 
 start_docker_db || exit_on_error "$?"
-
-sleep 5
-
-# Check that our db startup was successful.
-print_db_logs
 
 if [[ gpu_only -eq 1 ]];then
     test_pyomnisci --gpu-only || exit_on_error "$?"
