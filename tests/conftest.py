@@ -1,6 +1,4 @@
 import os
-import subprocess
-import time
 from uuid import uuid4
 
 import pytest
@@ -37,28 +35,9 @@ def mapd_server():
         # already running before pytest started
         pass
     else:
-        # not yet running...
-        subprocess.check_output(
-            [
-                'docker',
-                'run',
-                '-d',
-                '--ipc=host',
-                '-v',
-                '/dev:/dev',
-                '-p',
-                '6274:6274',
-                '-p',
-                '9092:9092',
-                '--name=mapd',
-                'omnisci/core-os-cpu:latest',
-            ]
+        raise RuntimeError(
+            "Unable to connect to OmniSci server at {}".format(omniscihost)
         )
-        # yield and stop afterwards?
-        assert _check_open()
-        # Takes some time to start up. Unfortunately even trying to connect
-        # will cause it to hang.
-        time.sleep(5)
 
 
 @pytest.fixture(scope='session')

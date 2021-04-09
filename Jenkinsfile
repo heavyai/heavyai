@@ -1,7 +1,7 @@
 def precommit_container_image = "sloria/pre-commit"
 def precommit_container_name = "pymapd-precommit-$BUILD_NUMBER"
-def db_cuda_container_image = "omnisci/core-os-cuda-dev:master"
-def db_cpu_container_image = "omnisci/core-os-cpu-dev:master"
+def db_cuda_container_image = "omnisci/core-os-cpu:v5.5.2"
+def db_cpu_container_image = "omnisci/core-os-cuda:v5.5.2"
 def db_container_name = "pymapd-db-$BUILD_NUMBER"
 def testscript_container_image = "rapidsai/rapidsai:0.15-cuda11.0-base-ubuntu18.04-py3.7"
 def testscript_container_name = "pymapd-pytest-$BUILD_NUMBER"
@@ -100,7 +100,7 @@ pipeline {
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image omnisci/core-os-cpu-dev:master \
+                                    --db-image $db_cuda_container_image \
                                     --cpu-only
                             """
                             script { stage_succeeded = true }
@@ -125,7 +125,7 @@ pipeline {
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image omnisci/core-os-cpu-dev:master \
+                                    --db-image $db_cuda_container_image \
                                     --gpu-only
                             """
                             script { stage_succeeded = true }
@@ -150,7 +150,7 @@ pipeline {
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image omnisci/core-os-cpu-dev:master \
+                                    --db-image $db_cuda_container_image \
                                     --rbc-only
                             """
                             script { stage_succeeded = true }

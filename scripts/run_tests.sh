@@ -68,7 +68,7 @@ error() {
 ready=1
 if ! [[ "$db_image" ]]; then
     ready=
-    error "Required parameter missing: CPU docker image. Specify it using --cpu-dockerimage"
+    error "Required parameter missing: CPU docker image. Specify it using --db-image"
 fi
 
 [[ "$ready" ]] || exit 1
@@ -94,7 +94,6 @@ start_docker_db() {
             /omnisci/startomnisci \
                 --non-interactive \
                 --data /omnisci-storage/data \
-                --config /omnisci-storage/omnisci.conf \
                 --enable-runtime-udf \
                 --enable-table-functions \
         "
@@ -152,10 +151,19 @@ fi
 
 if [[ cpu_only -eq 1 ]];then
     test_pyomnisci --cpu-only
+
 fi
 
 if [[ rbc_only -eq 1 ]];then
     test_pyomnisci_rbc
 fi
 
+echo "======================"
+echo "  DB Container Logs"
+echo "======================"
+docker logs $db_container_name
+
+echo "======================"
+echo "  Starting Cleanup"
+echo "======================"
 cleanup
