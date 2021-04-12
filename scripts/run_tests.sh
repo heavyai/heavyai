@@ -99,7 +99,7 @@ create_docker_network() {
 start_docker_db() {
     params=()
 
-    if [[ gpu_only -eq 1 ]];then
+    if [[ gpu_only -eq 1 ]] || [[ rbc_only -eq 1 ]];then
         params+=(--runtime=nvidia)
     fi
 
