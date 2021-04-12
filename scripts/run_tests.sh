@@ -101,7 +101,7 @@ start_docker_db() {
     db_params=()
 
     if [[ gpu_only -eq 1 ]] || [[ rbc_only -eq 1 ]];then
-        params+=(--runtime=nvidia)
+        params+=("--runtime=nvidia")
     fi
     
     if [[ rbc_only -eq 1 ]];then
@@ -120,7 +120,7 @@ start_docker_db() {
     )
 
 
-    echo "Launching docker run with args: ${params[@]}"
+    echo "Launching docker run with args: ${params[*]}"
 
     docker run "${params[@]}" \
         bash -c "\
@@ -129,8 +129,8 @@ start_docker_db() {
                 --data /omnisci-storage/data \
                 --enable-runtime-udf \
                 --enable-table-functions \
-                ${db_params[@]}
-        "
+                ${db_params[*]} \
+            "
 
     # Tail logs for 10s to ensure that our db startup was successful.
     timeout 10s docker logs -f "$db_container_name" || true
