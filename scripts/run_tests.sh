@@ -98,15 +98,21 @@ create_docker_network() {
 
 start_docker_db() {
     params=()
+    db_params=()
 
     if [[ gpu_only -eq 1 ]] || [[ rbc_only -eq 1 ]];then
         params+=(--runtime=nvidia)
+    fi
+    
+    if [[ rbc_only -eq 1 ]];then
+        db_params+=(--cpu-only)
     fi
 
     params+=( \
         -d \
         --rm \
         -p 6273 \
+        -p 6274 \
         '--ipc=shareable' \
         "--network=net_pyomnisci" \
         "--name=$db_container_name" \
@@ -123,6 +129,7 @@ start_docker_db() {
                 --data /omnisci-storage/data \
                 --enable-runtime-udf \
                 --enable-table-functions \
+                ${db_params[@]}
         "
 
     # Tail logs for 10s to ensure that our db startup was successful.
@@ -153,17 +160,15 @@ test_pyomnisci() {
 }
 
 test_pyomnisci_rbc() {
-    # Forward args to build-conda.sh
-    # --cpu-only
-    # or
-    # --gpu-only
+    # RBC tests make the assumption that
+    # that the the instance and tests are running 
+    # on the same network
     docker run \
         --rm \
         --ipc="container:${db_container_name}" \
         --interactive \
-        --network="net_pyomnisci" \
+        --network="container:${db_container_name}" \
         --workdir="/pyomnisci" \
-        --env OMNISCI_HOST="${db_container_name}" \
         --name "${testscript_container_name}_rbc" \
         $test_image_name \
         /pyomnisci/ci/test-rbc.sh
@@ -187,7 +192,6 @@ fi
 
 if [[ cpu_only -eq 1 ]];then
     test_pyomnisci --cpu-only || exit_on_error "$?"
-
 fi
 
 if [[ rbc_only -eq 1 ]];then
