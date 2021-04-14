@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -o errexit
-set -o nounset
 set -o pipefail
 
 # Get current script dir
@@ -56,13 +55,28 @@ cleanup() {
     docker rm -f $db_container_name &> /dev/null || true
 }
 
-fatal() {
-    echo "fatal: $*" >&2
-    exit 1
+print_db_logs() {
+    echo "=========================="
+    echo "  Begin DB Container Logs "
+    echo "=========================="
+    echo ""
+
+    docker logs $db_container_name
+
+    echo ""
+    echo "=========================="
+    echo "  End DB Container Logs "
+    echo "=========================="
 }
 
-error() {
-    echo "error: $*" >&2
+exit_on_error() {
+    echo "=================================="
+    echo "  Failed with error code: $*" >&2
+    echo "  Showing DB logs before exiting"
+    echo "=================================="
+    print_db_logs
+    cleanup
+    exit 1
 }
 
 ready=1
@@ -82,21 +96,44 @@ create_docker_network() {
 }
 
 start_docker_db() {
-    docker run \
+    params=()
+    db_params=()
+
+    if [[ gpu_only -eq 1 ]] || [[ rbc_only -eq 1 ]];then
+        params+=("--runtime=nvidia")
+    fi
+    
+    if [[ rbc_only -eq 1 ]];then
+        db_params+=(--cpu-only)
+    fi
+
+    params+=( \
         -d \
         --rm \
         -p 6273 \
-        --ipc="shareable" \
-        --network="net_pyomnisci" \
-        --name $db_container_name \
+        -p 6274 \
+        '--ipc=shareable' \
+        "--network=net_pyomnisci" \
+        "--name=$db_container_name" \
         "$db_image" \
+    )
+
+
+    echo "Launching docker run with args: ${params[*]}"
+
+    docker run "${params[@]}" \
         bash -c "\
             /omnisci/startomnisci \
                 --non-interactive \
                 --data /omnisci-storage/data \
                 --enable-runtime-udf \
                 --enable-table-functions \
-        "
+                ${db_params[*]} \
+            "
+
+    # Tail logs for 10s to ensure that our db startup was successful.
+    timeout 10s docker logs -f "$db_container_name" || true
+    return $?
 }
 
 build_test_image() {
@@ -118,20 +155,19 @@ test_pyomnisci() {
         --name "${testscript_container_name}" \
         $test_image_name \
         /pyomnisci/ci/build-conda.sh "$*"
+    return $?
 }
 
 test_pyomnisci_rbc() {
-    # Forward args to build-conda.sh
-    # --cpu-only
-    # or
-    # --gpu-only
+    # RBC tests make the assumption that
+    # that the the instance and tests are running 
+    # on the same network
     docker run \
         --rm \
         --ipc="container:${db_container_name}" \
         --interactive \
-        --network="net_pyomnisci" \
+        --network="container:${db_container_name}" \
         --workdir="/pyomnisci" \
-        --env OMNISCI_HOST="${db_container_name}" \
         --name "${testscript_container_name}_rbc" \
         $test_image_name \
         /pyomnisci/ci/test-rbc.sh
@@ -143,25 +179,23 @@ build_test_image
 
 create_docker_network
 
-start_docker_db
+# disable exit on error, so we still
+# get logs + perform cleanup
+set +o errexit 
+
+start_docker_db || exit_on_error "$?"
 
 if [[ gpu_only -eq 1 ]];then
-    test_pyomnisci --gpu-only
+    test_pyomnisci --gpu-only || exit_on_error "$?"
 fi
 
 if [[ cpu_only -eq 1 ]];then
-    test_pyomnisci --cpu-only
-
+    test_pyomnisci --cpu-only || exit_on_error "$?"
 fi
 
 if [[ rbc_only -eq 1 ]];then
-    test_pyomnisci_rbc
+    test_pyomnisci_rbc || exit_on_error "$?"
 fi
-
-echo "======================"
-echo "  DB Container Logs"
-echo "======================"
-docker logs $db_container_name
 
 echo "======================"
 echo "  Starting Cleanup"
