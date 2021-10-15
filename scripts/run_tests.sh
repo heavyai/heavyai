@@ -151,7 +151,7 @@ test_pyomnisci() {
         --interactive \
         --network="net_pyomnisci" \
         --workdir="/pyomnisci" \
-        --env OMNISCI_HOST="${db_container_name}" \
+        --env OMNISCI_DB_HOST="${db_container_name}" \
         --name "${testscript_container_name}" \
         $test_image_name \
         /pyomnisci/ci/build-conda.sh "$*"

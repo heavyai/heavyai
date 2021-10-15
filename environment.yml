@@ -4,7 +4,7 @@ channels:
 - defaults
 dependencies:
 - pandas
-- pyarrow==3.0.0
+- pyarrow>=3.0.0
 - thrift<=0.14.0
 - pandas
 - python >=3.7.0,<3.9
