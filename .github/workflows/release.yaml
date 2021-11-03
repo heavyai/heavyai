@@ -48,6 +48,6 @@ jobs:
         replacesArtifacts: true
         tag: ${{ github.event.release.tag_name }}
         name: Release ${{ github.event.release.tag_name }}
-        commit: main
+        commit: master
         body: Release ${{ github.event.release.tag_name }}
         token: ${{ secrets.GITHUB_TOKEN }}
