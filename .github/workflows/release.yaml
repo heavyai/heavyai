@@ -1,0 +1,38 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        mamba-version: "*"
+        environment-file: environment-release.yml
+        channels: conda-forge
+        activate-environment: pyomnisci-release
+        use-mamba: true
+        miniforge-variant: Mambaforge
+
+    - name: Build a binary wheel and a source tarball
+      run: python -m build --sdist --wheel --outdir dist/
+
+    - name: Check packages
+      run: twine check dist/*
+
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}

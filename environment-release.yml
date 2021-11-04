@@ -1,0 +1,8 @@
+name: pyomnisci-release
+channels:
+- conda-forge
+dependencies:
+- python
+- twine
+- build
+- wheel
