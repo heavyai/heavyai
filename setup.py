@@ -38,6 +38,7 @@ setup(
     name='pyomnisci',
     description='Data science toolkit support for OmniSciDB',
     long_description=long_description,
+    long_description_content_type="text/x-rst",
     url='https://github.com/omnisci/pyomnisci',
     author='OmniSci',
     author_email='community@omnisci.com',
