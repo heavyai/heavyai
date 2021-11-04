@@ -3,6 +3,8 @@ name: release
 on:
   release:
     types: [published]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
@@ -34,5 +36,6 @@ jobs:
 
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@master
+      if: ${{ github.event_name == 'release' }}
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
