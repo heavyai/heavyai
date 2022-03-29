@@ -66,7 +66,7 @@ class TestIntegration:
             host=heavydb_host,
             port=6274,
             protocol='binary',
-            dbname='heavydb',
+            dbname='omnisci',
         )
         assert con is not None
 
@@ -77,7 +77,7 @@ class TestIntegration:
             host=heavydb_host,
             port=6278,
             protocol='http',
-            dbname='heavydb',
+            dbname='omnisci',
         )
         assert con is not None
 
@@ -91,7 +91,7 @@ class TestIntegration:
         assert con._password == 'HyperInteractive'
         assert con._host == heavydb_host
         assert con._port == 6274
-        assert con._dbname == 'heavydb'
+        assert con._dbname == 'omnisci'
         assert con._protocol == 'binary'
 
     def test_connect_uri_and_others_raises(self):

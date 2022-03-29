@@ -52,7 +52,7 @@ def con(mapd_server):
         host=heavydb_host,
         port=6274,
         protocol='binary',
-        dbname='heavydb',
+        dbname='omnisci',
     )
 
 
