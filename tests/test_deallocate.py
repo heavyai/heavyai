@@ -1,7 +1,7 @@
 import os
 import subprocess
 import pytest
-from pyomnisci import connect
+from heavyai import connect
 from omnisci.thrift.ttypes import TOmniSciException, TApplicationException
 from .conftest import no_gpu
 import pandas as pd
@@ -22,7 +22,7 @@ class TestDeallocate:
             host='localhost',
             port=6274,
             protocol='binary',
-            dbname='omnisci',
+            dbname='heavydb',
         )
 
     def _transact(self, con):

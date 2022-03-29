@@ -39,7 +39,7 @@ GEO_TYPE_ID = [
 
 
 def get_mapd_dtype(data):
-    """Get the OmniSci type"""
+    """Get the HeavyDB type"""
     if is_object_dtype(data):
         return get_mapd_type_from_object(data)
     else:

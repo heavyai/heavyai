@@ -22,7 +22,7 @@ FAQ
     works fine?
 
 :A: Both ``select_ipc()`` and ``select_ipc_gpu()`` require running the pymapd code
-    on the same machine where OmniSci is running. This also implies that these two
+    on the same machine where HeavyDB is running. This also implies that these two
     methods will not work on Windows machines, just Linux (CPU and GPU) and OSX (CPU-only).
 
 ..
@@ -39,13 +39,13 @@ Helpful Hints
 *************
 
 * Convert your timestamps to UTC
-    OmniSci stores timestamps as UTC. When loading data to OmniSci, plain Python
+    HeavyDB stores timestamps as UTC. When loading data to HeavyDB, plain Python
     ``datetime`` objects are assumed to be UTC. If the ``datetime`` object has
     localization, only ``datetime64[ns, UTC]`` is supported.
 
 * When loading data, hand-create table schema if performance is critical
     While the ``load_table()`` does provide a keyword argument ``create`` to
-    auto-create the table before attempting to load to OmniSci, this functionality
+    auto-create the table before attempting to load to HeavyDB, this functionality
     is for *convenience purposes only*. The user is in a much better position
     to know the exact data types of the input data than the heuristics used by pymapd.
 
@@ -57,18 +57,18 @@ Helpful Hints
 Known Limitations
 *****************
 
-* OmniSci ``BIGINT`` is 64-bit
+* HeavyDB ``BIGINT`` is 64-bit
     Be careful using pymapd on 32-bit systems, as we do not check for integer
     overflow when returning a query.
 
 * ``DECIMAL`` types returned as Python ``float``
-    OmniSci stores and performs ``DECIMAL`` calculations within the
+    HeavyDB stores and performs ``DECIMAL`` calculations within the
     database at the column-definition level of precision. However, the results
     are currently returned back to Python as float. We are evaluating how to
     change this behavior, so that exact decimal representations is consistent on
     the server and in Python.
 
 
-.. _issue: https://github.com/omnisci/pymapd/issues
-.. _pull request: https://github.com/omnisci/pymapd/issues
-.. _Community forum: https://community.omnisci.com/forum
+.. _issue: https://github.com/heavyai/heavyai/issues
+.. _pull request: https://github.com/heavyai/heavyai/issues
+.. _Community forum: https://community.heavy.ai

@@ -1,4 +1,4 @@
-name: omnisci-dev
+name: heavyai-dev
 channels:
 - conda-forge
 - defaults

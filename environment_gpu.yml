@@ -1,4 +1,4 @@
-name: omnisci-gpu-dev
+name: heavyai-gpu-dev
 channels:
 - rapidsai
 - nvidia

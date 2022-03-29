@@ -38,10 +38,10 @@ def load_buffer(handle, size):
             assert "ctypes.find_library('c') did not find libc, which is \
                    required for IPC"
 
-    # OmniSci passes struct as bytes, convert to int
+    # HeavyDB passes struct as bytes, convert to int
     shmkey = struct.unpack('<L', handle)[0]
 
-    # Take key from OmniSci, get identifier of shared memory segment
+    # Take key from HeavyDB, get identifier of shared memory segment
     # If shmid is -1, an error has occured
     shmid = shmget(shmkey, size, 0)
     if shmid == -1:

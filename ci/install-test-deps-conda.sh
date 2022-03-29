@@ -20,7 +20,7 @@ function print_status() {
 function build_conda_env() {
     print_status "Building conda env"
     env_file="$PROJECT_ROOT/environment.yml"
-    env_name=omnisci-dev
+    env_name=heavyai-dev
     sed -E "s/- python[^[:alpha:]]+$/- python=$PYTHON/" ${env_file} > "/tmp/${env_name}_${PYTHON}.yml"
 
     cat "/tmp/${env_name}_${PYTHON}.yml"
@@ -49,7 +49,7 @@ build_conda_env
 # if [ "$CPU_ONLY" = true ] ; then
 # else
 #     ENV_FILE="$PROJECT_ROOT/environment_gpu.yml"
-#     ENV_NAME=omnisci-gpu-dev
+#     ENV_NAME=heavyai-gpu-dev
 # fi
 
 

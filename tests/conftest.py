@@ -4,21 +4,21 @@ from uuid import uuid4
 import pytest
 from thrift.transport import TSocket, TTransport
 from thrift.transport.TSocket import TTransportException
-from pyomnisci import connect
+from heavyai import connect
 import datetime
 import random
 import string
 import numpy as np
 import pandas as pd
 
-omniscihost = os.environ.get('OMNISCI_HOST', 'localhost')
+heavydb_host = os.environ.get('HEAVYDB_HOST', 'localhost')
 
 
 def _check_open():
     """
     Test to see if OmniSci running on localhost and socket open
     """
-    socket = TSocket.TSocket(omniscihost, 6274)
+    socket = TSocket.TSocket(heavydb_host, 6274)
     transport = TTransport.TBufferedTransport(socket)
 
     try:
@@ -36,7 +36,7 @@ def mapd_server():
         pass
     else:
         raise RuntimeError(
-            "Unable to connect to OmniSci server at {}".format(omniscihost)
+            "Unable to connect to OmniSci server at {}".format(heavydb_host)
         )
 
 
@@ -49,10 +49,10 @@ def con(mapd_server):
     return connect(
         user="admin",
         password='HyperInteractive',
-        host=omniscihost,
+        host=heavydb_host,
         port=6274,
         protocol='binary',
-        dbname='omnisci',
+        dbname='heavydb',
     )
 
 

@@ -1,4 +1,4 @@
-{% set name = "pyomnisci" %}
+{% set name = "heavyai" %}
 {% set version = "0.27.0" %}
 
 package:
@@ -40,15 +40,15 @@ test:
     - "pytest tests/"
 
 about:
-  home: http://github.com/omnisci/pyomnisci
+  home: http://github.com/heavyai/heavyai
   license: Apache-2.0
   license_family: Apache
   license_file: LICENSE.md
-  summary: A python DB API 2 compatible client for OmniSci (formerly MapD).
+  summary: A python DB API 2 compatible client for OmniSci (formerly OmniSci and MapD).
   description: |
-    A python DB API 2 compatible client for OmniSci (formerly MapD).
-  doc_url: https://pyomnisci.readthedocs.io
-  dev_url: https://github.com/omnisci/pyomnisci
+    A python DB API 2 compatible client for OmniSci (formerly OmniSci and MapD).
+  doc_url: https://heavyai.readthedocs.io
+  dev_url: https://github.com/heavyai/heavyai
 
 extra:
   recipe-maintainers:

@@ -163,7 +163,7 @@ class TestCPUDataNoNulls:
         )
 
         # reset_index adds a column to sort by, since results not guaranteed
-        # to return in sorted order from OmniSci
+        # to return in sorted order from HeavyDB
         df_in = _tests_table_no_nulls(10000)
         df_test = df_in["text_"].reset_index()
         df_test.columns = ["idx", "text_"]

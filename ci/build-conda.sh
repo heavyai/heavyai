@@ -16,7 +16,7 @@ usage() {
     fi
     cat << EOF
 Usage: $0 [OPTION]...
-Build and test pyomnisci in conda environment.
+Build and test heavyai in conda environment.
 Options:
   --cpu-only              Only run CPU based build and test.
   --gpu-only              Only run GPU based build and test.
