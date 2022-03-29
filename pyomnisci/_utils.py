@@ -4,16 +4,16 @@ import pandas as pd
 import ctypes
 from enum import Enum
 
+from types import MethodType
+from ._mutators import set_tdf, get_tdf
+from .ipc import load_buffer, shmdt
+
 
 class TimePrecision(Enum):
     SECONDS = 0
     MILLISECONDS = 3
     MICROSECONDS = 6
     NANOSECONDS = 9
-
-from types import MethodType
-from ._mutators import set_tdf, get_tdf
-from .ipc import load_buffer, shmdt
 
 
 def seconds_to_time(seconds):
@@ -53,14 +53,14 @@ def datetime_to_seconds(arr, precision):
         # Or from datetime with timezone information
         # Return timestamp in 'UTC'
         arr = pd.to_datetime(arr, utc=True)
-        return arr.view('i8') // 10 ** 9  # ns -> s since epoch
+        return arr.view('i8') // 10**9  # ns -> s since epoch
     else:
         if p == TimePrecision.SECONDS:
-            return arr.view('i8') // 10 ** 9
+            return arr.view('i8') // 10**9
         elif p == TimePrecision.MILLISECONDS:
-            return arr.view('i8') // 10 ** 6
+            return arr.view('i8') // 10**6
         elif p == TimePrecision.MICROSECONDS:
-            return arr.view('i8') // 10 ** 3
+            return arr.view('i8') // 10**3
         elif p == TimePrecision.NANOSECONDS:
             return arr.view('i8')
 
@@ -84,6 +84,7 @@ def date_to_seconds(arr):
     """Converts date into seconds"""
 
     return arr.apply(lambda x: np.datetime64(x, "s").astype(int))
+
 
 def _parse_tdf_gpu(tdf):
     """

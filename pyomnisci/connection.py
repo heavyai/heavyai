@@ -1,22 +1,17 @@
 import omnisci
-import pandas as pd
-import pyarrow as pa
 
-from collections import namedtuple
 import base64
 import pandas as pd
 import pyarrow as pa
 import ctypes
-from sqlalchemy.engine.url import make_url
-from thrift.protocol import TBinaryProtocol, TJSONProtocol
-from thrift.transport import TSocket, TSSLSocket, THttpClient, TTransport
-from thrift.transport.TSocket import TTransportException
-from omnisci.thrift.OmniSci import Client, TCreateParams
-from omnisci.common.ttypes import TDeviceType
-from omnisci.thrift.ttypes import TOmniSciException, TFileType, TDashboard, TArrowTransport
 
-from omnisci.cursor import Cursor
-from omnisci.exceptions import _translate_exception, OperationalError
+from omnisci.thrift.OmniSci import TCreateParams
+from omnisci.common.ttypes import TDeviceType
+from omnisci.thrift.ttypes import (
+    TFileType,
+    TDashboard,
+    TArrowTransport,
+)
 
 from omnisci._parsers import _bind_parameters, _extract_column_details
 from ._utils import _parse_tdf_gpu
@@ -28,9 +23,6 @@ from ._pandas_loaders import build_row_desc, _serialize_arrow_payload
 from . import _pandas_loaders
 from ._mutators import set_tdf, get_tdf
 from types import MethodType
-from omnisci._samlutils import get_saml_response
-
-from packaging.version import Version
 
 
 class Connection(omnisci.Connection):
@@ -61,7 +53,7 @@ class Connection(omnisci.Connection):
         method='infer',
         preserve_index=False,
         create='infer',
-        column_names=list()
+        column_names=list(),
     ):
         """Load data into a table
 
@@ -144,7 +136,9 @@ class Connection(omnisci.Connection):
             data = data.itertuples(index=preserve_index, name=None)
 
         input_data = _build_input_rows(data)
-        self._client.load_table(self._session, table_name, input_data, column_names)
+        self._client.load_table(
+            self._session, table_name, input_data, column_names
+        )
 
     def load_table_rowwise(self, table_name, data, column_names=list()):
         """Load data into a table row-wise
@@ -167,7 +161,9 @@ class Connection(omnisci.Connection):
         >>> con.load_table('bar', data)
         """
         input_data = _build_input_rows(data)
-        self._client.load_table(self._session, table_name, input_data, column_names)
+        self._client.load_table(
+            self._session, table_name, input_data, column_names
+        )
 
     def load_table_columnar(
         self,
@@ -176,7 +172,7 @@ class Connection(omnisci.Connection):
         preserve_index=False,
         chunk_size_bytes=0,
         col_names_from_schema=False,
-        column_names=list()
+        column_names=list(),
     ):
         """Load a pandas DataFrame to the database using OmniSci's Thrift-based
         columnar format
@@ -252,7 +248,9 @@ class Connection(omnisci.Connection):
                 self._session, table_name, cols, column_names
             )
 
-    def load_table_arrow(self, table_name, data, preserve_index=False, load_column_names=list()):
+    def load_table_arrow(
+        self, table_name, data, preserve_index=False, load_column_names=list()
+    ):
         """Load a pandas.DataFrame or a pyarrow Table or RecordBatch to the
         database using Arrow columnar format for interchange
 
@@ -281,7 +279,6 @@ class Connection(omnisci.Connection):
         self._client.load_table_binary_arrow(
             self._session, table_name, payload.to_pybytes(), load_column_names
         )
-
 
     def select_ipc_gpu(
         self,
@@ -408,7 +405,8 @@ class Connection(omnisci.Connection):
             df.get_tdf = MethodType(get_tdf, df)
 
             # Because deallocate_df can be called any time in future, keep tdf
-            # from OmniSciDB so that it can be used whenever deallocate_df called
+            # from OmniSciDB so that it can be used whenever
+            # deallocate_df called
             df.set_tdf(tdf)
 
             # free shared memory from Python
@@ -423,7 +421,8 @@ class Connection(omnisci.Connection):
             return df
         else:
             raise RuntimeError(
-                "The specified transport type is not supported. Only SHARED_MEMORY and WIRE are supported."
+                "The specified transport type is not supported."
+                " Only SHARED_MEMORY and WIRE are supported."
             )
 
     def deallocate_ipc_gpu(self, df, device_id=0):
@@ -539,9 +538,12 @@ class Connection(omnisci.Connection):
             dashboard_name=dashboard.dashboard_name,
             dashboard_state=dashboard.dashboard_state,
             image_hash=dashboard.image_hash,
-            dashboard_metadata=dashboard.dashboard_metadata)
+            dashboard_metadata=dashboard.dashboard_metadata,
+        )
 
-    def change_dashboard_sources(self, dashboard: TDashboard, remap: dict) -> TDashboard:
+    def change_dashboard_sources(
+        self, dashboard: TDashboard, remap: dict
+    ) -> TDashboard:
         """Change the sources of a dashboard
 
         Parameters
@@ -608,7 +610,11 @@ class Connection(omnisci.Connection):
         )
 
         newdashname = new_name or '{0} (Copy)'.format(d.dashboard_name)
-        d = self.change_dashboard_sources(d, source_remap) if source_remap else d
+        d = (
+            self.change_dashboard_sources(d, source_remap)
+            if source_remap
+            else d
+        )
         d.dashboard_name = newdashname
         return self.create_dashboard(d)
 
@@ -634,7 +640,8 @@ class Connection(omnisci.Connection):
         )
         rendered_vega = RenderedVega(result)
         return rendered_vega
-    
+
+
 class RenderedVega:
     def __init__(self, render_result):
         self._render_result = render_result
@@ -648,9 +655,6 @@ class RenderedVega:
                 'alt="OmniSci Vega">'.format(self.image_data)
             ),
         }
-
-
-
 
 
 def connect(

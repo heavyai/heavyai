@@ -125,7 +125,7 @@ def thrift_cast(data, mapd_type, scale=0, precision=0):
         return data.astype(int)
     elif mapd_type == 'DECIMAL':
         # Multiply by 10^scale
-        data = data * 10 ** scale
+        data = data * 10**scale
         # fillna and convert to int
         data = data.fillna(mapd_to_na[mapd_type])
         return data.astype(int)
@@ -182,7 +182,9 @@ def build_input_columnar(
                 # then cast to int
                 for c in data:
                     data.loc[:, c] = thrift_cast(
-                        data=data[c], mapd_type=mapd_type, scale=scale,
+                        data=data[c],
+                        mapd_type=mapd_type,
+                        scale=scale,
                     )
 
             if has_nulls:
