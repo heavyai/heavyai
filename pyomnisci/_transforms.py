@@ -37,6 +37,7 @@ def _change_dashboard_sources(dashboard, remap):
     dashboard.dashboard_metadata = json.dumps(dm)
     return dashboard
 
+
 def _table_remap(tab, remap):
     # Remap items in our old dashboard state to the new table name
     for old_table, defs in remap.items():

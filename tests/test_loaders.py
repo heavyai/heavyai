@@ -91,7 +91,7 @@ def get_expected(data, col_properties):
                     data[prop['name']] = data[prop['name']].astype(int)
                 else:
                     data[prop['name']] = (
-                        data[prop['name']].astype(int) // 10 ** 9
+                        data[prop['name']].astype(int) // 10**9
                     )
             elif prop['type'] == 'DECIMAL':
                 # data = (data * 10 ** precision).astype(int) \
