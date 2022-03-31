@@ -37,7 +37,7 @@ test:
     - pytest-mock
     - geopandas
   commands:
-    - "pytest tests/"
+    - "pytest -sv tests/"
 
 about:
   home: http://github.com/heavyai/heavyai
