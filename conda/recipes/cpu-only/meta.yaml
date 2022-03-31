@@ -22,7 +22,7 @@ requirements:
     - git
   run:
     - python
-    - {{ pin_compatible('numpy', lower_bound='1.16') }}
+    - numpy
     - pyomniscidb
     - pandas
     - pyarrow <=3.0.0

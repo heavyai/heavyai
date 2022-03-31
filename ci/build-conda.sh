@@ -43,7 +43,7 @@ build_test_cpu() {
                 -c conda-forge \
                 -c defaults \
                 --output-folder /tmp/conda-build-cpu/ \
-                ./cpu-only && \
+                ./gpu && \
                 echo "CPU Build & Test was successful."
 }
 
