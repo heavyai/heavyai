@@ -1,5 +1,5 @@
 def precommit_container_image = "sloria/pre-commit"
-def precommit_container_name = "pymapd-precommit-$BUILD_NUMBER"
+def precommit_container_name = "heavyai-precommit-$BUILD_NUMBER"
 def db_cuda_container_image = "omnisci/core-os-cuda"
 def db_cpu_container_image = "omnisci/core-os-cpu"
 def stage_succeeded
@@ -95,7 +95,7 @@ pipeline {
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image $db_cuda_container_image \
+                                    --db-image $db_cpu_container_image \
                                     --cpu-only
                             """
                             script { stage_succeeded = true }
