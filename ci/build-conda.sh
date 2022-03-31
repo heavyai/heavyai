@@ -39,13 +39,13 @@ while [[ $# != 0 ]]; do
 done
 
 build_test_cpu() {
-    mamba environment create -f environment.yml
+    mamba env create -f environment.yml
     conda activate heavyai-dev
     pytest -sv tests/
 }
 
 build_test_gpu() {
-    mamba environment create -f environment_gpu.yml
+    mamba env create -f environment_gpu.yml
     conda activate heavyai-gpu-dev
     pytest -sv tests/
 }
