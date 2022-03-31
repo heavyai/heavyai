@@ -34,13 +34,11 @@ testscript_container_name="heavyai-test" # name of container the tests run in
 test_image_name="heavyai_test" # image to run the tests in
 cpu_only=0
 gpu_only=0
-rbc_only=0
 
 # set docker image to run DB in
 while [[ $# != 0 ]]; do
     case $1 in
     -h|--help) usage ;;
-    --rbc-only) rbc_only=1 ;;
     --cpu-only) cpu_only=1 ;;
     --gpu-only) gpu_only=1 ;;
     --db-image) shift; db_image=$1 ;;
@@ -99,12 +97,8 @@ start_docker_db() {
     params=()
     db_params=()
 
-    if [[ gpu_only -eq 1 ]] || [[ rbc_only -eq 1 ]];then
+    if [[ gpu_only -eq 1 ]];then
         params+=("--runtime=nvidia")
-    fi
-    
-    if [[ rbc_only -eq 1 ]];then
-        db_params+=(--cpu-only)
     fi
 
     params+=( \
@@ -158,21 +152,6 @@ test_heavyai() {
     return $?
 }
 
-test_heavyai_rbc() {
-    # RBC tests make the assumption that
-    # that the the instance and tests are running 
-    # on the same network
-    docker run \
-        --rm \
-        --ipc="container:${db_container_name}" \
-        --interactive \
-        --network="container:${db_container_name}" \
-        --workdir="/heavyai" \
-        --name "${testscript_container_name}_rbc" \
-        $test_image_name \
-        /heavyai/ci/test-rbc.sh
-}
-
 cleanup
 
 build_test_image
@@ -191,10 +170,6 @@ fi
 
 if [[ cpu_only -eq 1 ]];then
     test_heavyai --cpu-only || exit_on_error "$?"
-fi
-
-if [[ rbc_only -eq 1 ]];then
-    test_heavyai_rbc || exit_on_error "$?"
 fi
 
 echo "======================"

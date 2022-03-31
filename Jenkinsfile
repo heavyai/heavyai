@@ -37,7 +37,6 @@ pipeline {
                 setBuildStatus("Build queued", "PENDING", "Pre_commit_hook_check", git_commit);
                 setBuildStatus("Build queued", "PENDING", "Pytest - [CPU] - Conda", git_commit);
                 setBuildStatus("Build queued", "PENDING", "Pytest - [GPU] - Conda", git_commit);
-                setBuildStatus("Build queued", "PENDING", "RBC tests - conda", git_commit);
             }
         }
         stage("Linter and Tests") {
@@ -127,31 +126,6 @@ pipeline {
                                 $WORKSPACE/scripts/run_tests.sh \
                                     --db-image $db_cuda_container_image \
                                     --gpu-only
-                            """
-                            script { stage_succeeded = true }
-                        }
-                    }
-                    post {
-                        always {
-                            script {
-                                if (stage_succeeded == true) {
-                                    setBuildStatus("Build succeeded", "SUCCESS", "$STAGE_NAME", git_commit);
-                                } else {
-                                    setBuildStatus("Build failed", "FAILURE", "$STAGE_NAME", git_commit);
-                                }
-                            }
-                        }
-                    }
-                }
-                stage('RBC tests - conda') {
-                    steps {
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            script { stage_succeeded = false }
-                            setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
-                            sh """
-                                $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image $db_cuda_container_image \
-                                    --rbc-only
                             """
                             script { stage_succeeded = true }
                         }
