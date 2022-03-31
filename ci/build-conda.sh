@@ -6,7 +6,7 @@ set -o pipefail  # don't hide errors within pipes
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 WORKDIR="$DIR/.."
 
-pushd "$WORKDIR/conda/recipes"
+pushd "$WORKDIR"
 
 usage() {
     local exitcode=0
@@ -39,24 +39,19 @@ while [[ $# != 0 ]]; do
 done
 
 build_test_cpu() {
-    conda build --no-anaconda-upload \
-                -c conda-forge \
-                -c defaults \
-                --output-folder /tmp/conda-build-cpu/ \
-                ./gpu && \
-                echo "CPU Build & Test was successful."
+    mamba environment create -f environment.yml
+    conda activate heavyai-dev
+    pytest -sv tests/
 }
 
 build_test_gpu() {
-    conda build --no-anaconda-upload \
-                -c rapidsai \
-                -c nvidia \
-                -c conda-forge \
-                -c defaults \
-                --output-folder /tmp/conda-build-gpu/ \
-                ./gpu && \
-                echo "GPU Build & Test was successful."
+    mamba environment create -f environment_gpu.yml
+    conda activate heavyai-gpu-dev
+    pytest -sv tests/
 }
+
+
+conda install -y mamba
 
 
 if [[ gpu_only -ne 1 ]];then
