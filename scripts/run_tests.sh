@@ -145,7 +145,7 @@ test_heavyai() {
         --interactive \
         --network="net_heavyai" \
         --workdir="/heavyai" \
-        --env OMNISCI_HOST="${db_container_name}" \
+        --env HEAVYDB_HOST="${db_container_name}" \
         --name "${testscript_container_name}" \
         $test_image_name \
         /heavyai/ci/build-conda.sh "$*"

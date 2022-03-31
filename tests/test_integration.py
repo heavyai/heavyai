@@ -26,7 +26,7 @@ import textwrap
 from .conftest import no_gpu
 from .data import dashboard_metadata
 
-heavydb_host = os.environ.get('OMNISCI_HOST', 'localhost')
+heavydb_host = os.environ.get('HEAVYDB_HOST', 'localhost')
 
 # XXX: Make it hashable to silence warnings; see if this can be done upstream
 # This isn't a huge deal, but our testing context mangers for asserting
