@@ -8,7 +8,7 @@ def git_commit
 void setBuildStatus(String message, String state, String context, String commit_sha) {
   step([
       $class: "GitHubCommitStatusSetter",
-      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/heavyai/heavyai"],
+      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/heavyai/pyomnisci"],
       contextSource: [$class: "ManuallyEnteredCommitContextSource", context: context],
       commitShaSource: [$class: "ManuallyEnteredShaSource", sha: commit_sha],
       errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
