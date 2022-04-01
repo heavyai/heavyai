@@ -7,7 +7,7 @@ dependencies:
 - pyomniscidb
 - pyarrow>=3.0.0
 - pandas
-- python >=3.7.0
+- python >=3.7.0, <3.10
 - geopandas
 - shapely
 - numpy
