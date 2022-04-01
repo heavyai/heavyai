@@ -1,17 +1,14 @@
 def precommit_container_image = "sloria/pre-commit"
-def precommit_container_name = "pymapd-precommit-$BUILD_NUMBER"
+def precommit_container_name = "heavyai-precommit-$BUILD_NUMBER"
 def db_cuda_container_image = "omnisci/core-os-cuda"
 def db_cpu_container_image = "omnisci/core-os-cpu"
-def db_container_name = "pymapd-db-$BUILD_NUMBER"
-def testscript_container_image = "rapidsai/rapidsai:0.15-cuda11.0-base-ubuntu18.04-py3.7"
-def testscript_container_name = "pymapd-pytest-$BUILD_NUMBER"
 def stage_succeeded
 def git_commit
 
 void setBuildStatus(String message, String state, String context, String commit_sha) {
   step([
       $class: "GitHubCommitStatusSetter",
-      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/omnisci/pyomnisci"],
+      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/heavyai/pyomnisci"],
       contextSource: [$class: "ManuallyEnteredCommitContextSource", context: context],
       commitShaSource: [$class: "ManuallyEnteredShaSource", sha: commit_sha],
       errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
@@ -37,7 +34,6 @@ pipeline {
                 setBuildStatus("Build queued", "PENDING", "Pre_commit_hook_check", git_commit);
                 setBuildStatus("Build queued", "PENDING", "Pytest - [CPU] - Conda", git_commit);
                 setBuildStatus("Build queued", "PENDING", "Pytest - [GPU] - Conda", git_commit);
-                setBuildStatus("Build queued", "PENDING", "RBC tests - conda", git_commit);
             }
         }
         stage("Linter and Tests") {
@@ -89,7 +85,6 @@ pipeline {
                             # Pull required test docker container images
                             docker pull $db_cuda_container_image
                             docker pull $db_cpu_container_image
-                            docker pull $testscript_container_image
                         """
                     }
                 }
@@ -143,38 +138,11 @@ pipeline {
                         }
                     }
                 }
-                stage('RBC tests - conda') {
-                    steps {
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            script { stage_succeeded = false }
-                            setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
-                            sh """
-                                $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image $db_cuda_container_image \
-                                    --rbc-only
-                            """
-                            script { stage_succeeded = true }
-                        }
-                    }
-                    post {
-                        always {
-                            script {
-                                if (stage_succeeded == true) {
-                                    setBuildStatus("Build succeeded", "SUCCESS", "$STAGE_NAME", git_commit);
-                                } else {
-                                    setBuildStatus("Build failed", "FAILURE", "$STAGE_NAME", git_commit);
-                                }
-                            }
-                        }
-                    }
-                }
             }
             post {
                 always {
                     sh """
                         docker rm -f $precommit_container_name || true
-                        docker rm -f $testscript_container_name || true
-                        docker rm -f $db_container_name || true
                         sudo chown -R jenkins-slave:jenkins-slave $WORKSPACE
                     """
                     cleanWs()

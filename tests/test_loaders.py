@@ -3,8 +3,8 @@ import pytest
 from decimal import Decimal
 import datetime
 
-from pyomnisci._loaders import _build_input_rows
-from pyomnisci import _pandas_loaders
+from heavyai._loaders import _build_input_rows
+from heavyai import _pandas_loaders
 from omnisci._parsers import ColumnDetails
 from omnisci.thrift.OmniSci import (
     TStringRow,
@@ -361,7 +361,7 @@ class TestLoaders:
     )
     def test_build_table_columnar(self, data, col_properties):
 
-        from pyomnisci._pandas_loaders import build_input_columnar
+        from heavyai._pandas_loaders import build_input_columnar
 
         col_types = get_col_types(col_properties)
 

@@ -18,7 +18,7 @@ usage() {
     fi
     cat << EOF
 Usage: $0 [OPTION]...
-Run pyomnisci tests
+Run heavyai tests
 Options:
   --db-image IMAGE_NAME         Required.
   --cpu-only                    Only build and test for CPU build.
@@ -28,19 +28,17 @@ EOF
     exit "$exitcode"
 }
 
-db_image= # docker image that hosts the OmniSciDB instance
-db_container_name="pyomnisci-db" # name of container the db instances runs in
-testscript_container_name="pyomnisci-test" # name of container the tests run in
-test_image_name="pyomnisci_test" # image to run the tests in
+db_image= # docker image that hosts the HeavyDB instance
+db_container_name="heavyai-db" # name of container the db instances runs in
+testscript_container_name="heavyai-test" # name of container the tests run in
+test_image_name="heavyai_test" # image to run the tests in
 cpu_only=0
 gpu_only=0
-rbc_only=0
 
 # set docker image to run DB in
 while [[ $# != 0 ]]; do
     case $1 in
     -h|--help) usage ;;
-    --rbc-only) rbc_only=1 ;;
     --cpu-only) cpu_only=1 ;;
     --gpu-only) gpu_only=1 ;;
     --db-image) shift; db_image=$1 ;;
@@ -92,19 +90,15 @@ create_docker_network() {
     # Create docker network
     # to share connection between
     # db container & test container
-    docker network create net_pyomnisci || true
+    docker network create net_heavyai || true
 }
 
 start_docker_db() {
     params=()
     db_params=()
 
-    if [[ gpu_only -eq 1 ]] || [[ rbc_only -eq 1 ]];then
+    if [[ gpu_only -eq 1 ]];then
         params+=("--runtime=nvidia")
-    fi
-    
-    if [[ rbc_only -eq 1 ]];then
-        db_params+=(--cpu-only)
     fi
 
     params+=( \
@@ -113,7 +107,7 @@ start_docker_db() {
         -p 6273 \
         -p 6274 \
         '--ipc=shareable' \
-        "--network=net_pyomnisci" \
+        "--network=net_heavyai" \
         "--name=$db_container_name" \
         "$db_image" \
     )
@@ -140,7 +134,7 @@ build_test_image() {
     docker build --tag $test_image_name --file ./ci/Dockerfile .
 }
 
-test_pyomnisci() {
+test_heavyai() {
     # Forward args to build-conda.sh
     # --cpu-only
     # or
@@ -149,28 +143,13 @@ test_pyomnisci() {
         --rm \
         --ipc="container:${db_container_name}" \
         --interactive \
-        --network="net_pyomnisci" \
-        --workdir="/pyomnisci" \
-        --env OMNISCI_HOST="${db_container_name}" \
+        --network="net_heavyai" \
+        --workdir="/heavyai" \
+        --env HEAVYDB_HOST="${db_container_name}" \
         --name "${testscript_container_name}" \
         $test_image_name \
-        /pyomnisci/ci/build-conda.sh "$*"
+        /heavyai/ci/build-conda.sh "$*"
     return $?
-}
-
-test_pyomnisci_rbc() {
-    # RBC tests make the assumption that
-    # that the the instance and tests are running 
-    # on the same network
-    docker run \
-        --rm \
-        --ipc="container:${db_container_name}" \
-        --interactive \
-        --network="container:${db_container_name}" \
-        --workdir="/pyomnisci" \
-        --name "${testscript_container_name}_rbc" \
-        $test_image_name \
-        /pyomnisci/ci/test-rbc.sh
 }
 
 cleanup
@@ -186,15 +165,11 @@ set +o errexit
 start_docker_db || exit_on_error "$?"
 
 if [[ gpu_only -eq 1 ]];then
-    test_pyomnisci --gpu-only || exit_on_error "$?"
+    test_heavyai --gpu-only || exit_on_error "$?"
 fi
 
 if [[ cpu_only -eq 1 ]];then
-    test_pyomnisci --cpu-only || exit_on_error "$?"
-fi
-
-if [[ rbc_only -eq 1 ]];then
-    test_pyomnisci_rbc || exit_on_error "$?"
+    test_heavyai --cpu-only || exit_on_error "$?"
 fi
 
 echo "======================"

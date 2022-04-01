@@ -26,7 +26,7 @@ jobs:
         mamba-version: "*"
         environment-file: environment-release.yml
         channels: conda-forge
-        activate-environment: pyomnisci-release
+        activate-environment: heavyai-release
         use-mamba: true
         miniforge-variant: Mambaforge
 

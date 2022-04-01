@@ -1,37 +1,37 @@
 .. _usage:
 
-.. currentmodule:: pyomnisci
+.. currentmodule:: heavyai
 
 5-Minute Quickstart
 ===================
 
-``pyomnisci`` follows the python DB API 2.0, so experience with other Python database
-clients will feel similar to pyomnisci.
+``heavyai`` follows the python DB API 2.0, so experience with other Python database
+clients will feel similar to heavyai.
 
 .. note::
 
-   This tutorial assumes you have an OmniSci server running on ``localhost:6274`` with the
+   This tutorial assumes you have an HeavyDB server running on ``localhost:6274`` with the
    default logins and databases, and have loaded the example ``flights_2008_10k``
    dataset. This dataset can be obtained from the ``insert_sample_data`` script included
-   in the OmniSci install directory.
+   in the HeavyDB install directory.
 
-Installing pyomnisci
---------------------
+Installing heavyai
+------------------
 
-pyomnisci
-*********
+heavyai
+*******
 
-``pyomnisci`` can be installed with conda using `conda-forge`_ or pip.
+``heavyai`` can be installed with conda using `conda-forge`_ or pip.
 
 .. code-block:: console
 
    # conda
-   conda install -c conda-forge pyomnisci
+   conda install -c conda-forge heavyai
 
    # pip
-   pip install pyomnisci
+   pip install heavyai
 
-If you have an NVIDIA GPU in the same machine where your pyomnisci code will be running, you'll want to `install
+If you have an NVIDIA GPU in the same machine where your heavyai code will be running, you'll want to `install
 cudf`_ as well to return results sets into GPU memory as a cudf GPU DataFrame:
 
 cudf via conda
@@ -63,8 +63,8 @@ Connecting
 Self-Hosted Install
 *******************
 
-For self-hosted OmniSci installs, use ``protocol='binary'`` (this is the default)
-to connect with OmniSci, as this will have better performance than using
+For self-hosted HeavyDB installs, use ``protocol='binary'`` (this is the default)
+to connect with HeavyDB, as this will have better performance than using
 ``protocol='http'`` or ``protocol='https'``.
 
 To create a :class:`Connection` using the ``connect()`` method along with ``user``,
@@ -72,25 +72,25 @@ To create a :class:`Connection` using the ``connect()`` method along with ``user
 
 .. code-block:: python
 
-   >>> from pyomnisci import connect
+   >>> from heavyai import connect
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
-   ...               dbname="omnisci")
+   ...               dbname="heavydb")
    >>> con
-   Connection(mapd://admin:***@localhost:6274/omnisci?protocol=binary)
+   Connection(mapd://admin:***@localhost:6274/heavydb?protocol=binary)
 
 Alternatively, you can pass in a `SQLAlchemy`_-compliant connection string to
 the ``connect()`` method:
 
 .. code-block:: python
 
-   >>> uri = "mapd://admin:HyperInteractive@localhost:6274/omnisci?protocol=binary"
+   >>> uri = "mapd://admin:HyperInteractive@localhost:6274/heavydb?protocol=binary"
    >>> con = connect(uri=uri)
-   Connection(mapd://admin:***@localhost:6274/omnisci?protocol=binary)
+   Connection(mapd://admin:***@localhost:6274/heavydb?protocol=binary)
 
-OmniSci Cloud
+HeavyDB Cloud
 *************
 
-When connecting to OmniSci Cloud, the two methods are the same as above,
+When connecting to HeavyDB Cloud, the two methods are the same as above,
 however you can only use ``protocol='https'``. For a step-by-step walk-through with
 screenshots, please see this `blog post`_.
 
@@ -110,7 +110,7 @@ The best option depends on the hardware you have available, your connection to
 the database, and what you plan to do with the returned data. In general, the
 third method, using Thrift to serialize and deserialize the data, will be slower
 than the GPU or CPU shared memory methods. The shared memory methods require
-that your OmniSci database is running on the same machine.
+that your HeavyDB database is running on the same machine.
 
 .. note::
 
@@ -123,7 +123,7 @@ GPU Shared Memory
 
 Use :meth:`Connection.select_ipc_gpu` to select data into a ``GpuDataFrame``,
 provided by `cudf`_. To use this method, **the Python code must be running
-on the same machine as the OmniSci installation AND you must have an NVIDIA GPU
+on the same machine as the HeavyDB installation AND you must have an NVIDIA GPU
 installed.**
 
 .. code-block:: python
@@ -143,7 +143,7 @@ CPU Shared Memory
 
 Use :meth:`Connection.select_ipc` to select data into a pandas ``DataFrame``
 using CPU shared memory to avoid unnecessary intermediate copies. To use this
-method, **the Python code must be running on the same machine as the OmniSci
+method, **the Python code must be running on the same machine as the HeavyDB
 installation.**
 
 .. code-block:: python
@@ -163,28 +163,28 @@ pandas.read_sql()
 With a :class:`Connection` defined, you can use ``pandas.read_sql()`` to
 read your data in a pandas ``DataFrame``. This will be slower than using
 :meth:`Connection.select_ipc`, but works regardless of where the Python code
-is running (i.e. ``select_ipc()`` must be on the same machine as the OmniSci
+is running (i.e. ``select_ipc()`` must be on the same machine as the HeavyDB
 install, ``pandas.read_sql()`` works everywhere):
 
 .. code-block:: python
 
-   >>> from pyomnisci import connect
+   >>> from heavyai import connect
    >>> import pandas as pd
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
-   ...               dbname="omnisci")
+   ...               dbname="heavydb")
    >>> df = pd.read_sql("SELECT depdelay, arrdelay FROM flights_2008_10k limit 100", con)
 
 
 Cursors
 *******
 
-After connecting to OmniSci, a cursor can be created with :meth:`Connection.cursor`:
+After connecting to HeavyDB, a cursor can be created with :meth:`Connection.cursor`:
 
 .. code-block:: python
 
    >>> c = con.cursor()
    >>> c
-   <pyomnisci.cursor.Cursor at 0x110fe6438>
+   <heavyai.cursor.Cursor at 0x110fe6438>
 
 Or by using a context manager:
 
@@ -192,14 +192,14 @@ Or by using a context manager:
 
    >>> with con as c:
    ...     print(c)
-   <pyomnisci.cursor.Cursor object at 0x1041f9630>
+   <heavyai.cursor.Cursor object at 0x1041f9630>
 
 Arbitrary SQL can be executed using :meth:`Cursor.execute`.
 
 .. code-block:: python
 
    >>> c.execute("SELECT depdelay, arrdelay FROM flights_2008_10k limit 100")
-   <pyomnisci.cursor.Cursor at 0x110fe6438>
+   <heavyai.cursor.Cursor at 0x110fe6438>
 
 This will set the ``rowcount`` property, with the number of returned rows
 
@@ -225,7 +225,7 @@ Loading Data
 
 The fastest way to load data is :meth:`Connection.load_table_arrow`. Internally,
 this will use ``pyarrow`` and the `Apache Arrow`_ format to exchange data with
-the OmniSci database.
+the HeavyDB database.
 
 .. code-block:: python
 
@@ -309,7 +309,7 @@ Python functions to define these as Runtime UDFs:
 
 .. note::
 
-   Runtime UDFs can be defined if the OmniSci server has enabled its
+   Runtime UDFs can be defined if the HeavyDB server has enabled its
    support (see ``--enable-runtime-udf`` option of ``omnisci_server``)
    and `rbc`_ package is installed. This is still experimental functionality, and
    currently it does not work on the Windows operating system.

@@ -35,11 +35,11 @@ extra_requires = {
 }
 
 setup(
-    name='pyomnisci',
-    description='Data science toolkit support for OmniSciDB',
+    name='heavyai',
+    description='Data science toolkit support for HeavyDB',
     long_description=long_description,
     long_description_content_type="text/x-rst",
-    url='https://github.com/omnisci/pyomnisci',
+    url='https://github.com/omnisci/heavyai',
     author='OmniSci',
     author_email='community@omnisci.com',
     license='Apache Software License',
@@ -55,7 +55,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
-    packages=["pyomnisci"],
+    packages=["heavyai"],
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
     install_requires=install_requires,

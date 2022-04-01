@@ -1,4 +1,4 @@
-name: pyomnisci-release
+name: heavyai-release
 channels:
 - conda-forge
 dependencies:

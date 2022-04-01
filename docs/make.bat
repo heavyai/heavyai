@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=source
 set BUILDDIR=build
-set SPHINXPROJ=pyomnisci
+set SPHINXPROJ=heavyai
 
 if "%1" == "" goto help
 

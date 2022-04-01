@@ -6,7 +6,7 @@ set -o pipefail  # don't hide errors within pipes
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 WORKDIR="$DIR/.."
 
-pushd "$WORKDIR/conda/recipes"
+pushd "$WORKDIR"
 
 usage() {
     local exitcode=0
@@ -16,7 +16,7 @@ usage() {
     fi
     cat << EOF
 Usage: $0 [OPTION]...
-Build and test pyomnisci in conda environment.
+Build and test heavyai in conda environment.
 Options:
   --cpu-only              Only run CPU based build and test.
   --gpu-only              Only run GPU based build and test.
@@ -39,25 +39,20 @@ while [[ $# != 0 ]]; do
 done
 
 build_test_cpu() {
-    conda build --no-anaconda-upload \
-                -c conda-forge \
-                -c defaults \
-                --output-folder /tmp/conda-build-cpu/ \
-                ./cpu-only && \
-                echo "CPU Build & Test was successful."
+    mamba env create -f environment.yml
+    conda activate heavyai-dev
+    pytest -sv tests/
 }
 
 build_test_gpu() {
-    conda build --no-anaconda-upload \
-                -c rapidsai \
-                -c nvidia \
-                -c conda-forge \
-                -c defaults \
-                --output-folder /tmp/conda-build-gpu/ \
-                ./gpu && \
-                echo "GPU Build & Test was successful."
+    mamba env create -f environment_gpu.yml
+    conda activate heavyai-gpu-dev
+    pytest -sv tests/
 }
 
+
+conda install -y mamba
+eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
 
 if [[ gpu_only -ne 1 ]];then
     echo "================================"

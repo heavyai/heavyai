@@ -1,5 +1,5 @@
 # versioning scm
-pyomnisci/_version.py
+heavyai/_version.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -174,7 +174,7 @@ class Connection(omnisci.Connection):
         col_names_from_schema=False,
         column_names=list(),
     ):
-        """Load a pandas DataFrame to the database using OmniSci's Thrift-based
+        """Load a pandas DataFrame to the database using HeavyDB's Thrift-based
         columnar format
 
         Parameters
@@ -189,7 +189,7 @@ class Connection(omnisci.Connection):
             request
         col_names_from_schema: bool, default False
             Read the existing table schema to determine the column names. This
-            will read the schema of an existing table in OmniSci and match
+            will read the schema of an existing table in HeavyDB and match
             those names to the column names of the dataframe. This is for
             user convenience when loading from data that is unordered,
             especially handy when a table has a large number of columns.
@@ -207,7 +207,7 @@ class Connection(omnisci.Connection):
 
         Notes
         -----
-        Use ``pymapd >= 0.11.0`` while running with ``omnisci >= 4.6.0`` in
+        Use ``pymapd >= 0.11.0`` while running with ``heavydb >= 4.6.0`` in
         order to avoid loading inconsistent values into DATE column.
         """
 
@@ -221,7 +221,7 @@ class Connection(omnisci.Connection):
         if len(table_details) != len(data.columns):
             raise ValueError(
                 'Number of columns in dataframe ({}) does not \
-                                match number of columns in OmniSci table \
+                                match number of columns in HeavyDB table \
                                 ({})'.format(
                     len(data.columns), len(table_details)
                 )
@@ -313,7 +313,7 @@ class Connection(omnisci.Connection):
         An ``ImportError`` is raised if those aren't available.
 
         This method requires the Python code to be executed on the same machine
-        where OmniSci running.
+        where HeavyDB running.
         """
         try:
             from cudf.comm.gpuarrow import GpuArrowReader  # noqa
@@ -337,7 +337,7 @@ class Connection(omnisci.Connection):
 
         df = _parse_tdf_gpu(tdf)
 
-        # Deallocate TDataFrame at OmniSci instance
+        # Deallocate TDataFrame at HeavyDB instance
         if release_memory:
             self.deallocate_ipc_gpu(df)
 
@@ -371,7 +371,7 @@ class Connection(omnisci.Connection):
         Notes
         -----
         This method requires the Python code to be executed on the same machine
-        where OmniSci running.
+        where HeavyDB running.
         """
         self.register_runtime_udfs()
 
@@ -405,7 +405,7 @@ class Connection(omnisci.Connection):
             df.get_tdf = MethodType(get_tdf, df)
 
             # Because deallocate_df can be called any time in future, keep tdf
-            # from OmniSciDB so that it can be used whenever
+            # from HeavyDB so that it can be used whenever
             # deallocate_df called
             df.set_tdf(tdf)
 
@@ -414,7 +414,7 @@ class Connection(omnisci.Connection):
             # https://github.com/omnisci/pymapd/issues/31
             free_df = shmdt(ctypes.cast(df_buf[1], ctypes.c_void_p))  # noqa
 
-            # Deallocate TDataFrame at OmniSci instance
+            # Deallocate TDataFrame at HeavyDB instance
             if release_memory:
                 self.deallocate_ipc(df)
 
@@ -526,7 +526,7 @@ class Connection(omnisci.Connection):
         ----------
 
             dashboard: TDashboard
-                The OmniSci dashboard object to create
+                The HeavyDB dashboard object to create
 
         Returns
         -------
@@ -550,7 +550,7 @@ class Connection(omnisci.Connection):
         ----------
 
         dashboard: TDashboard
-            The OmniSci dashboard object to transform
+            The HeavyDB dashboard object to transform
         remap: dict
             EXPERIMENTAL
             A dictionary remapping table names. The old table name(s)
@@ -562,7 +562,7 @@ class Connection(omnisci.Connection):
         Returns
         -------
         dashboard: TDashboard
-            An OmniSci dashboard with the sources remapped
+            An HeavyDB dashboard with the sources remapped
 
         Examples
         --------
@@ -652,7 +652,7 @@ class RenderedVega:
             'image/png': self.image_data,
             'text/html': (
                 '<img src="data:image/png;base64,{}" '
-                'alt="OmniSci Vega">'.format(self.image_data)
+                'alt="HeavyAI Vega">'.format(self.image_data)
             ),
         }
 
@@ -709,12 +709,12 @@ def connect(
     You can either pass a string ``uri``, all the individual components,
     or an existing sessionid excluding user, password, and database
 
-    >>> connect('mapd://admin:HyperInteractive@localhost:6274/omnisci?'
+    >>> connect('mapd://admin:HyperInteractive@localhost:6274/heavydb?'
     ...         'protocol=binary')
     Connection(mapd://mapd:***@localhost:6274/mapd?protocol=binary)
 
     >>> connect(user='admin', password='HyperInteractive', host='localhost',
-    ...         port=6274, dbname='omnisci')
+    ...         port=6274, dbname='heavydb')
 
     >>> connect(user='admin', password='HyperInteractive', host='localhost',
     ...         port=443, idpurl='https://sso.localhost/logon',

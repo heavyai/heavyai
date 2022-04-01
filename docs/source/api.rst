@@ -3,7 +3,7 @@
 API Reference
 =============
 
-.. automodule:: pyomnisci
+.. automodule:: heavyai
    :members: connect, Connection, Cursor
 
 Exceptions

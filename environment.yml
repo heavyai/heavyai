@@ -1,9 +1,10 @@
-name: omnisci-dev
+name: heavyai-dev
 channels:
 - conda-forge
 - defaults
 dependencies:
 - pandas
+- pyomniscidb
 - pyarrow==3.0.0
 - thrift<=0.14.0
 - pandas
@@ -16,6 +17,7 @@ dependencies:
 - coverage
 - flake8
 - pre-commit
+- pytest
 - pytest-cov
 - pytest-mock
 - requests
