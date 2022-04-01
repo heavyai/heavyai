@@ -19,7 +19,6 @@ classifiers = [
 dependencies = [
     "pyomniscidb >=5.5.0",
     "pyarrow >=3.0.0",
-    "numba >=0.49",
     "pandas",
     "numpy",
     "shapely",
@@ -27,6 +26,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+gpu = [
+    "numba >=0.49"
+]
+
 doc = [
     "sphinx",
     "numpydoc",

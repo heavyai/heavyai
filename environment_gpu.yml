@@ -10,6 +10,7 @@ dependencies:
 - python >=3.7.0
 - pyomniscidb
 - pyarrow>=3.0.0
+- numba>=0.49
 - pandas
 - geopandas
 - shapely
