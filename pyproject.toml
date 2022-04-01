@@ -23,7 +23,7 @@ dependencies = [
     "pandas",
     "numpy",
     "shapely",
-    "packaging",
+    "importlib_metadata",  # drop for python >3.7
 ]
 
 [project.optional-dependencies]
