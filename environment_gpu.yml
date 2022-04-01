@@ -9,7 +9,7 @@ dependencies:
 - cudatoolkit=11.0
 - python >=3.7.0
 - pyomniscidb
-- pyarrow<=3.0.0
+- pyarrow>=3.0.0
 - pandas
 - geopandas
 - shapely
