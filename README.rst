@@ -27,8 +27,8 @@ pymapd with GPU capabilities.
 To install pymapd and cudf for GPU Dataframe support (conda-only)::
 
    conda create -n omnisci-gpu -c rapidsai -c nvidia -c conda-forge \
-    -c defaults cudf=0.18 python=3.7 cudatoolkit=11.0 heavyai
-   
+    -c defaults cudf>=0.18 python=3.7 cudatoolkit=11.0 heavyai
+
 Documentation
 -------------
 

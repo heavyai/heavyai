@@ -13,7 +13,6 @@ dependencies:
 - pandas
 - geopandas
 - shapely
-- sqlalchemy
 - numpy
 - numpydoc
 - coverage
@@ -24,4 +23,3 @@ dependencies:
 - pytest-mock
 - sphinx
 - sphinx_rtd_theme
-- requests

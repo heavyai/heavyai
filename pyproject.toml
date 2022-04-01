@@ -61,3 +61,10 @@ line-length = 79
 skip-string-normalization = true
 target-version = ["py37", "py38", "py39"]
 exclude = "tests/data|docs|scripts"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-rsx -v"
+testpaths = [
+    "tests",
+]

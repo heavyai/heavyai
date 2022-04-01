@@ -10,7 +10,6 @@ dependencies:
 - python >=3.7.0
 - geopandas
 - shapely
-- sqlalchemy
 - numpy
 - numpydoc
 - coverage
@@ -19,6 +18,5 @@ dependencies:
 - pytest
 - pytest-cov
 - pytest-mock
-- requests
 - sphinx
 - sphinx_rtd_theme
