@@ -1,9 +1,0 @@
-name: heavyai-release
-channels:
-- conda-forge
-dependencies:
-- keyring >=15.1
-- python
-- twine
-- build
-- wheel

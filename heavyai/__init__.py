@@ -1,14 +1,11 @@
-from pkg_resources import get_distribution, DistributionNotFound
+import importlib_metadata
 
 # module constants
 try:
-    __version__ = get_distribution(__name__).version
-except DistributionNotFound:
+    __version__ = importlib_metadata.version(__name__)
+except importlib_metadata.PackageNotFoundError:
     # package is not installed
     pass
-
-# clean up
-del get_distribution, DistributionNotFound
 
 apilevel = "2.0"
 threadsafety = 2

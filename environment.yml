@@ -5,13 +5,11 @@ channels:
 dependencies:
 - pandas
 - pyomniscidb
-- pyarrow==3.0.0
-- thrift<=0.14.0
+- pyarrow>=3.0.0
 - pandas
-- python >=3.7.0
+- python >=3.7.0, <3.10
 - geopandas
 - shapely
-- sqlalchemy
 - numpy
 - numpydoc
 - coverage
@@ -20,6 +18,5 @@ dependencies:
 - pytest
 - pytest-cov
 - pytest-mock
-- requests
 - sphinx
 - sphinx_rtd_theme

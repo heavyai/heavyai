@@ -7,13 +7,12 @@ channels:
 dependencies:
 - cudf>=0.16
 - cudatoolkit=11.0
-- python >=3.7.0
+- python >=3.7.0, <3.10
 - pyomniscidb
-- pyarrow<=3.0.0
+- pyarrow>=3.0.0
 - pandas
 - geopandas
 - shapely
-- sqlalchemy
 - numpy
 - numpydoc
 - coverage
@@ -24,4 +23,3 @@ dependencies:
 - pytest-mock
 - sphinx
 - sphinx_rtd_theme
-- requests

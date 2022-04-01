@@ -109,20 +109,10 @@ ENV/
 .mypy_cache/
 
 # asv
-benchmarks/.asv
 *.c
-pymapd/*.cpp
 *.dat
 *.csv
-benchmarks/*.html
-bencmarks/*.ipynb
 *.ipynb
-/benchmarks/cpu
-/benchmarks/cpu-small
-/benchmarks/gpu
-/benchmarks/gpu-small
-/benchmarks/thrift
-mapdql_history.txt
 
 # Folder metadata
 **/.DS_Store

@@ -1,43 +1,31 @@
-name: release
+name: Release
 
 on:
-  release:
-    types: [published]
-  pull_request:
-    branches: [ master ]
+  push:
+    tags:
+      - '*.*'
 
 jobs:
-  build:
-
+  release:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    defaults:
-      run:
-        shell: bash -l {0}
-
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v3
 
-    - uses: conda-incubator/setup-miniconda@v2
-      with:
-        miniconda-version: "latest"
-        mamba-version: "*"
-        environment-file: environment-release.yml
-        channels: conda-forge
-        activate-environment: heavyai-release
-        use-mamba: true
-        miniforge-variant: Mambaforge
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+          architecture: 'x64'
 
-    - name: Build a binary wheel and a source tarball
-      run: python -m build --sdist --wheel --outdir dist/
+    - name: Install flit
+      run: pip install flit
 
-    - name: Check packages
-      run: twine check dist/*
+    - name: Build
+      run: flit build
 
-    - name: Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@master
-      if: ${{ github.event_name == 'release' }}
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Publish to PyPI
+      env:
+        FLIT_USERNAME: __token__
+        FLIT_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        flit publish
