@@ -66,7 +66,7 @@ def no_gpu():
     """Check for the required GPU dependencies"""
     try:
         from numba import cuda
-        #import cudf  # noqa
+        import cudf  # noqa
 
         try:
             cuda.select_device(0)
