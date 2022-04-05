@@ -24,7 +24,7 @@ pipeline {
             agent any
             steps {
                 script {
-                    if (env.GITHUB_BRANCH_NAME == 'master') {
+                    if (env.GITHUB_BRANCH_NAME == 'main') {
                         script { git_commit = "$GITHUB_BRANCH_HEAD_SHA" }
                     } else {
                         script { git_commit = "$GITHUB_PR_HEAD_SHA" }

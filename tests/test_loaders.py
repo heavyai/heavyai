@@ -521,9 +521,9 @@ class TestLoaders:
                 # need to be objects. This means our type detection will be
                 # unreliable since if there is no number outside the int32
                 # bounds in a column with nulls then we will be assuming int
-                'int_': np.array([0, 1, None], dtype=np.object),
+                'int_': np.array([0, 1, None], dtype=object),
                 'bigint_': np.array(
-                    [0, 9223372036854775807, None], dtype=np.object
+                    [0, 9223372036854775807, None], dtype=object
                 ),
                 'double_': np.array([0, 1, None], dtype=np.float64),
                 'varchar_': ['a', 'b', None],

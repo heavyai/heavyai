@@ -226,4 +226,4 @@ of the PR, check the accuracy of the package versions on the `meta.yaml`_ recipe
 .. _conda-forge: https://github.com/conda-forge/heavyai-feedstock
 .. _release tag: https://github.com/heavyai/heavyai/releases
 .. _twine: https://pypi.org/project/twine/
-.. _meta.yaml: https://github.com/conda-forge/heavyai-feedstock/blob/master/recipe/meta.yaml
+.. _meta.yaml: https://github.com/conda-forge/heavyai-feedstock/blob/main/recipe/meta.yaml
