@@ -19,6 +19,3 @@ dependencies:
 - pytest-mock
 - sphinx
 - sphinx_rtd_theme
-- pip
-- pip:
-  - heavydb
