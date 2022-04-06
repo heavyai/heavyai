@@ -707,16 +707,16 @@ def connect(
     You can either pass a string ``uri``, all the individual components,
     or an existing sessionid excluding user, password, and database
 
-    >>> connect('mapd://admin:HyperInteractive@localhost:6274/heavydb?'
+    >>> connect('heavydb://admin:HyperInteractive@localhost:6274/heavyai?'
     ...         'protocol=binary')
-    Connection(mapd://mapd:***@localhost:6274/mapd?protocol=binary)
+    Connection(mapd://heavydb:***@localhost:6274/heavyai?protocol=binary)
 
     >>> connect(user='admin', password='HyperInteractive', host='localhost',
-    ...         port=6274, dbname='heavydb')
+    ...         port=6274, dbname='heavyai')
 
     >>> connect(user='admin', password='HyperInteractive', host='localhost',
     ...         port=443, idpurl='https://sso.localhost/logon',
-                protocol='https')
+    ...         protocol='https')
 
     >>> connect(sessionid='XihlkjhdasfsadSDoasdllMweieisdpo', host='localhost',
     ...         port=6273, protocol='http')

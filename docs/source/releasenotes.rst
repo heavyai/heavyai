@@ -3,9 +3,9 @@
 Release Notes
 =============
 
-The release notes for pymapd are managed on the GitHub repository in the `Releases tab`_. Since pymapd
+The release notes for heavyai are managed on the GitHub repository in the `Releases tab`_. Since heavyai
 releases try to track new features in the main OmniSci Core project, it's highly recommended that you check
-the Releases tab any time you install a new version of pymapd or upgrade OmniSci so that you understand any breaking
+the Releases tab any time you install a new version of heavyai or upgrade OmniSci so that you understand any breaking
 changes that may have been made during a new pymapd release.
 
 Some notable breaking changes include:
@@ -37,15 +37,15 @@ Some notable breaking changes include:
 
 
 
-.. _Releases tab: https://github.com/omnisci/pymapd/releases
-.. _0.6: https://github.com/omnisci/pymapd/releases/tag/v0.6.0
-.. _0.7: https://github.com/omnisci/pymapd/releases/tag/v0.7.0
-.. _0.8: https://github.com/omnisci/pymapd/releases/tag/v0.8.0
-.. _0.9: https://github.com/omnisci/pymapd/releases/tag/v0.9.0
-.. _0.10: https://github.com/omnisci/pymapd/releases/tag/v0.10.0
-.. _0.11: https://github.com/omnisci/pymapd/releases/tag/v0.11.0
-.. _0.12: https://github.com/omnisci/pymapd/releases/tag/v0.12.0
-.. _0.13: https://github.com/omnisci/pymapd/releases/tag/v0.13.0
-.. _0.14: https://github.com/omnisci/pymapd/releases/tag/v0.14.0
-.. _0.15: https://github.com/omnisci/pymapd/releases/tag/v0.15.0
-.. _0.17: https://github.com/omnisci/pymapd/releases/tag/v0.17.0
+.. _Releases tab: https://github.com/heavyai/heavyai/releases
+.. _0.6: https://github.com/heavyai/heavyai/releases/tag/v0.6.0
+.. _0.7: https://github.com/heavyai/heavyai/releases/tag/v0.7.0
+.. _0.8: https://github.com/heavyai/heavyai/releases/tag/v0.8.0
+.. _0.9: https://github.com/heavyai/heavyai/releases/tag/v0.9.0
+.. _0.10: https://github.com/heavyai/heavyai/releases/tag/v0.10.0
+.. _0.11: https://github.com/heavyai/heavyai/releases/tag/v0.11.0
+.. _0.12: https://github.com/heavyai/heavyai/releases/tag/v0.12.0
+.. _0.13: https://github.com/heavyai/heavyai/releases/tag/v0.13.0
+.. _0.14: https://github.com/heavyai/heavyai/releases/tag/v0.14.0
+.. _0.15: https://github.com/heavyai/heavyai/releases/tag/v0.15.0
+.. _0.17: https://github.com/heavyai/heavyai/releases/tag/v0.17.0

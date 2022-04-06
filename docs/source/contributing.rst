@@ -16,7 +16,7 @@ Development Environment Setup
 -----------------------------
 
 heavyai is written in plain Python 3 (i.e. no Cython), and as such, doesn't require any specialized development
-environment outside of installing the dependencies. However, we do suggest creating a new conda development enviornment
+environment outside of installing the dependencies. However, we do suggest creating a new conda development environment
 with the provided conda `environment.yml` file to ensure that your changes work without relying on unspecified system-level
 Python packages.
 
@@ -35,7 +35,7 @@ CPU Environment
    # clone heavyai repo
    git clone https://github.com/heavyai/heavyai.git && cd heavyai
 
-   conda env create -f ./environment.yml
+   conda env create -f ci/environment.yml
 
    # ensure you have activated the environment
    conda activate heavyai-dev
@@ -50,7 +50,7 @@ GPU Environment
 .. code-block:: shell
 
    # from the heavyai project root
-   conda env create -f environment_gpu.yml
+   conda env create -f ci/environment_gpu.yml
 
    # ensure you have activated the environment
    conda activate heavyai-gpu-dev
@@ -138,7 +138,7 @@ installation instructions.
 Updating Apache Thrift Bindings
 -------------------------------
 
-When the upstream `mapd-core`_ project updates its Apache Thrift definition file, the bindings shipped with
+When the upstream `HeavyDB`_ project updates its Apache Thrift definition file, the bindings shipped with
 ``heavyai`` need to be regenerated. Note that the `heavydb` repository must be cloned locally.
 
 .. code-block:: shell
@@ -171,7 +171,7 @@ you need to install sphinx and sphinx-rtd-theme into your development environmen
    pip install sphinx sphinx-rtd-theme
 
 Once you have sphinx installed, to build the documentation switch to the ``heavyai/docs`` directory and run ``make html``. This will update the documentation
-in the ``heavyai/docs/build/html`` directory. From that directory, running ``python -m http.server`` will allow you to preview the site on ``localhost:8000``
+in the ``heavyai/docs/build/html`` directory. From that directory, ``index.html`` can be opened
 in the browser. Run ``make html`` each time you save a file to see the file changes in the documentation.
 
 --------------------------------
@@ -182,24 +182,21 @@ heavyai doesn't currently follow a rigid release schedule; rather, when enough f
 version to be released, or a sufficiently serious bug/issue is fixed, we will release a new version. heavyai is distributed via `PyPI`_
 and `conda-forge`_.
 
-Prior to submitting to PyPI and/or conda-forge, create a new `release tag`_ on GitHub (with notes), then run ``git pull`` to bring this tag to your
-local heavyai repository folder.
-
 ****
 PyPI
 ****
 
-To publish to PyPI, we use the `twine`_ package via the CLI. twine only allows for submitting to PyPI by registered users
-(currently, internal Heavy.AI employees):
+To publish to PyPI, we use `flit`_ in the CI. Upon a new tag push, the
+package is built and published on PyPI. Be sure to have a matching version
+in `pyproject.toml` and tag.
+
+Authorized users can also publish a new version locally:
 
 .. code-block:: shell
 
-   conda install twine
-   python setup.py sdist
-   twine upload dist/*
-
-Publishing a package to PyPI is near instantaneous after runnning ``twine upload dist/*``. Before running ``twine upload``, be sure
-the ``dist`` directory only has the current version of the package you are intending to upload.
+   conda install flit
+   flit build
+   flit publish
 
 ***********
 conda-forge
@@ -212,7 +209,7 @@ nothing that needs to be done to speed this up, just be patient.
 When the conda-forge bot opens a PR on the heavyai-feedstock repo, one of the feedstock maintainers needs to validate the correctness
 of the PR, check the accuracy of the package versions on the `meta.yaml`_ recipe file, and then merge once the CI tests pass.
 
-.. _mapd-core: https://github.com/omnisci/mapd-core
+.. _HeavyDB: https://github.com/heavyai/heavydb
 .. _Docker: https://hub.docker.com/u/omnisci
 .. _CPU image: https://hub.docker.com/r/omnisci/core-os-cpu
 .. _HeavyDB Core GPU-enabled: https://hub.docker.com/r/omnisci/core-os-cuda
@@ -224,6 +221,5 @@ of the PR, check the accuracy of the package versions on the `meta.yaml`_ recipe
 .. _pull requests: https://github.com/heavyai/heavyai/pulls
 .. _PyPI: https://pypi.org/project/heavyai/
 .. _conda-forge: https://github.com/conda-forge/heavyai-feedstock
-.. _release tag: https://github.com/heavyai/heavyai/releases
-.. _twine: https://pypi.org/project/twine/
+.. _flit: https://pypi.org/project/flit/
 .. _meta.yaml: https://github.com/conda-forge/heavyai-feedstock/blob/main/recipe/meta.yaml
