@@ -9,6 +9,7 @@ dependencies:
 - cudatoolkit=11.0
 - python >=3.7.0
 - pyarrow>=3.0.0=*cuda
+- thrift >=0.13
 - pandas
 - geopandas
 - shapely
