@@ -9,5 +9,5 @@ API Reference
 Exceptions
 ----------
 
-.. automodule:: omnisci.exceptions
+.. automodule:: heavyai.exceptions
    :members: Error, InterfaceError, DatabaseError, OperationalError, IntegrityError, InternalError, ProgrammingError, NotSupportedError

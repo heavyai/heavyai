@@ -1,7 +1,7 @@
 """
 Internal helpers for loading data
 """
-from omnisci.thrift.ttypes import TStringRow, TStringValue
+from heavydb.thrift.ttypes import TStringRow, TStringValue
 import collections
 
 

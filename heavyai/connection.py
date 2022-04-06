@@ -1,19 +1,18 @@
-import omnisci
+import heavydb
 
 import base64
 import pandas as pd
 import pyarrow as pa
 import ctypes
 
-from omnisci.thrift.OmniSci import TCreateParams
-from omnisci.common.ttypes import TDeviceType
-from omnisci.thrift.ttypes import (
-    TFileType,
+from heavydb.thrift.Heavy import TCreateParams
+from heavydb.common.ttypes import TDeviceType
+from heavydb.thrift.ttypes import (
     TDashboard,
     TArrowTransport,
 )
 
-from omnisci._parsers import _bind_parameters, _extract_column_details
+from heavydb._parsers import _bind_parameters, _extract_column_details
 from ._utils import _parse_tdf_gpu
 
 from ._loaders import _build_input_rows
@@ -25,7 +24,7 @@ from ._mutators import set_tdf, get_tdf
 from types import MethodType
 
 
-class Connection(omnisci.Connection):
+class Connection(heavydb.Connection):
     def create_table(self, table_name, data, preserve_index=False):
         """Create a table from a pandas.DataFrame
 
@@ -42,7 +41,6 @@ class Connection(omnisci.Connection):
             self._session,
             table_name,
             row_desc,
-            TFileType.DELIMITED,
             TCreateParams(False),
         )
 

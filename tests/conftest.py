@@ -58,8 +58,8 @@ def con(mapd_server):
 
 @pytest.fixture
 def mock_client(mocker):
-    """A magicmock for omnisci.connection.Client"""
-    return mocker.patch("omnisci.connection.Client")
+    """A magicmock for heavydb.connection.Client"""
+    return mocker.patch("heavydb.connection.Client")
 
 
 def no_gpu():

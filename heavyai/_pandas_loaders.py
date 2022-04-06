@@ -14,9 +14,9 @@ from pandas.api.types import (
     is_datetime64_any_dtype,
 )
 
-from omnisci.thrift.ttypes import TColumn, TColumnData, TColumnType
+from heavydb.thrift.ttypes import TColumn, TColumnData, TColumnType
 
-from omnisci.common.ttypes import TTypeInfo, TDatumType
+from heavydb.common.ttypes import TTypeInfo, TDatumType
 
 from ._utils import (
     date_to_seconds,

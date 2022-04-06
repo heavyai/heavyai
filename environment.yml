@@ -4,7 +4,8 @@ channels:
 - defaults
 dependencies:
 - pandas
-- pyomniscidb
+- pip:
+  - heavydb
 - pyarrow>=3.0.0
 - pandas
 - python >=3.7.0

@@ -8,11 +8,11 @@ import os
 from unittest import mock
 
 import pytest
-from omnisci import connect, ProgrammingError, DatabaseError
-from omnisci.cursor import Cursor
-from omnisci._parsers import Description, ColumnDetails
-from omnisci.thrift.ttypes import TOmniSciException
-from omnisci.common.ttypes import TDatumType
+from heavydb import connect, ProgrammingError, DatabaseError
+from heavydb.cursor import Cursor
+from heavydb._parsers import Description, ColumnDetails
+from heavydb.thrift.ttypes import TDBException
+from heavydb.common.ttypes import TDatumType
 
 import geopandas as gpd
 import pandas as pd
@@ -31,7 +31,7 @@ heavydb_host = os.environ.get('HEAVYDB_HOST', 'localhost')
 # XXX: Make it hashable to silence warnings; see if this can be done upstream
 # This isn't a huge deal, but our testing context mangers for asserting
 # exceptions need hashability
-TOmniSciException.__hash__ = lambda x: id(x)
+TDBException.__hash__ = lambda x: id(x)
 
 
 def _cursor2df(cursor):
@@ -83,7 +83,7 @@ class TestIntegration:
 
     def test_connect_uri(self):
         uri = (
-            'omnisci://admin:HyperInteractive@{0}:6274/omnisci?'
+            'heavydb://admin:HyperInteractive@{0}:6274/omnisci?'
             'protocol=binary'.format(heavydb_host)
         )
         con = connect(uri=uri)
@@ -96,7 +96,7 @@ class TestIntegration:
 
     def test_connect_uri_and_others_raises(self):
         uri = (
-            'omnisci://admin:HyperInteractive@{0}:6274/omnisci?'
+            'heavydb://admin:HyperInteractive@{0}:6274/omnisci?'
             'protocol=binary'.format(heavydb_host)
         )
         with pytest.raises(TypeError):
@@ -1471,7 +1471,7 @@ class TestLoaders:
                     image_hash="",
                     dashboard_metadata=json.dumps(meta_data),
                 )
-            except TOmniSciException:
+            except TDBException:
                 dashboards = con._client.get_dashboards(con._session)
                 for dash in dashboards:
                     if dash.dashboard_name == old_dashboard_name:
@@ -1496,7 +1496,7 @@ class TestLoaders:
                 dashboard_id = con.duplicate_dashboard(
                     dashboard_id, new_dashboard_name, remap
                 )
-            except TOmniSciException:
+            except TDBException:
                 dashboards = con._client.get_dashboards(con._session)
                 for dash in dashboards:
                     if dash.dashboard_name == new_dashboard_name:
