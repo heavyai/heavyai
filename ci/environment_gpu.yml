@@ -10,6 +10,7 @@ dependencies:
 - python >=3.7.0
 - pyarrow>=3.0.0=*cuda
 - thrift >=0.13
+- sqlalchemy  # 3.10 issue with one of its dependency if pip
 - pandas
 - geopandas
 - shapely
