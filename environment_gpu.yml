@@ -8,8 +8,6 @@ dependencies:
 - cudf>=0.16
 - cudatoolkit=11.0
 - python >=3.7.0
-- pip:
-  - heavydb
 - pyarrow>=3.0.0=*cuda
 - pandas
 - geopandas
@@ -24,3 +22,6 @@ dependencies:
 - pytest-mock
 - sphinx
 - sphinx_rtd_theme
+- pip
+- pip:
+  - heavydb

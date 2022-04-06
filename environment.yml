@@ -4,8 +4,6 @@ channels:
 - defaults
 dependencies:
 - pandas
-- pip:
-  - heavydb
 - pyarrow>=3.0.0
 - pandas
 - python >=3.7.0
@@ -21,3 +19,6 @@ dependencies:
 - pytest-mock
 - sphinx
 - sphinx_rtd_theme
+- pip
+- pip:
+  - heavydb
