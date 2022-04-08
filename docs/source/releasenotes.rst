@@ -17,6 +17,8 @@ Some notable breaking changes include:
    =======    ===============
    Release    Breaking Change
    =======    ===============
+   `1.0`_     Change dependency from `pyomniscidb` to `pyheavydb`
+   `0.30`_    New name `heavyai`
    `0.17`_    Added preliminary support for Runtime User-Defined Functions
    `0.15`_    Support for binary TLS Thrift connections
    `0.14`_    Updated Thrift bindings to 4.8
@@ -49,3 +51,5 @@ Some notable breaking changes include:
 .. _0.14: https://github.com/heavyai/heavyai/releases/tag/v0.14.0
 .. _0.15: https://github.com/heavyai/heavyai/releases/tag/v0.15.0
 .. _0.17: https://github.com/heavyai/heavyai/releases/tag/v0.17.0
+.. _0.30: https://github.com/heavyai/heavyai/releases/tag/v0.30.0
+.. _1.0: https://github.com/heavyai/heavyai/releases/tag/v1.0.0
