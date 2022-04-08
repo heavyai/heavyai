@@ -171,7 +171,7 @@ install, ``pandas.read_sql()`` works everywhere):
    >>> from heavyai import connect
    >>> import pandas as pd
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
-   ...               dbname="heavydb")
+   ...               dbname="heavyai")
    >>> df = pd.read_sql("SELECT depdelay, arrdelay FROM flights_2008_10k limit 100", con)
 
 

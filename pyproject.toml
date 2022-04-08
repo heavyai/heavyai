@@ -17,7 +17,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "heavydb >=6.0.0",
+    "pyheavydb >=6.0.0",
     "pyarrow >=3.0.0",
     "pandas",
     "numpy",

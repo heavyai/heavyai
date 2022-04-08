@@ -9,7 +9,7 @@ the `Apache Arrow`_-based `cudf GPU DataFrame`_ format for efficient data interc
 
    >>> from heavyai import connect
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
-   ...               dbname="heavydb")
+   ...               dbname="heavyai")
    >>> df = con.select_ipc_gpu("SELECT depdelay, arrdelay"
    ...                         "FROM flights_2008_10k"
    ...                         "LIMIT 100")
