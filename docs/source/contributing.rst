@@ -150,7 +150,7 @@ When the upstream `HeavyDB`_ project updates its Apache Thrift definition file, 
    cd ./heavydb
 
    # Use Thrift to generate the Python bindings
-   thrift -gen py -r heavydb.thrift
+   thrift -gen py -r heavy.thrift
 
    # Copy the generated bindings to the heavyai root
    cp -r ./gen-py/heavydb/* ../heavyai/heavydb/
