@@ -1,4 +1,5 @@
 import os
+import warnings
 from uuid import uuid4
 
 import pytest
@@ -65,14 +66,23 @@ def mock_client(mocker):
 def no_gpu():
     """Check for the required GPU dependencies"""
     try:
-        from numba import cuda
-        import cudf  # noqa
+        try:
+            from numba import cuda
+        except ImportError:
+            warnings.warn("ImportError: numba")
+
+        try:
+            import cudf  # noqa
+        except ImportError:
+            warnings.warn("ImportError: cudf")
 
         try:
             cuda.select_device(0)
         except cuda.cudadrv.error.CudaDriverError:
+            warnings.warn("CudaDriverError")
             return True
     except ImportError:
+        warnings.warn("ImportError")
         return True
     return False
 
