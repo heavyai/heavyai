@@ -49,6 +49,7 @@ build_test_cpu() {
 build_test_gpu() {
     mamba env create -f ci/environment_gpu.yml
     conda activate heavyai-gpu-dev
+    python -c "import cudf"
     pip install pyheavydb
     pip install --no-deps -e .
     pytest -sv tests/
