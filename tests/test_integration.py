@@ -83,7 +83,7 @@ class TestIntegration:
 
     def test_connect_uri(self):
         uri = (
-            'heavydb://admin:HyperInteractive@{0}:6274/heavyai?'
+            'heavydb://admin:HyperInteractive@{0}:6274/omnisci?'
             'protocol=binary'.format(heavydb_host)
         )
         con = connect(uri=uri)
