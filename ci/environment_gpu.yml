@@ -2,7 +2,6 @@ name: heavyai-gpu-dev
 channels:
 - rapidsai
 - nvidia
-- numba
 - conda-forge
 - defaults
 dependencies:
