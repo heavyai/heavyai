@@ -5,8 +5,8 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- cudf>=0.16
-- cudatoolkit=11.4
+- cudf
+- cudatoolkit
 - python >=3.7.0
 - pyarrow>=3.0.0=*cuda
 - thrift >=0.13
@@ -24,3 +24,6 @@ dependencies:
 - pytest-mock
 - sphinx
 - sphinx_rtd_theme
+- pip
+- pip:
+    - pyheavydb

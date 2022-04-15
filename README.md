@@ -33,7 +33,7 @@ heavyai with GPU capabilities.
 To install heavyai for GPU Dataframe support (conda-only):
 
 ```bash
-conda create -n heavyai-gpu -c rapidsai -c nvidia -c conda-forge -c defaults python cudf cudatoolkit=11.4 heavyai
+conda create -n heavyai-gpu -c rapidsai -c nvidia -c conda-forge -c defaults python cudf cudatoolkit heavyai
 ```
 
 Note that `pyheavydb` needs to be installed in the environment with pip
