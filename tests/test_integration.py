@@ -31,7 +31,7 @@ heavydb_host = os.environ.get('HEAVYDB_HOST', 'localhost')
 # XXX: Make it hashable to silence warnings; see if this can be done upstream
 # This isn't a huge deal, but our testing context mangers for asserting
 # exceptions need hashability
-TDBException.__hash__ = lambda x: id(x)
+TDBException.__hash__ = id
 
 
 def _cursor2df(cursor):
