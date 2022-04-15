@@ -148,20 +148,21 @@ test_heavyai() {
 
     docker run "${params[@]}" \
         --rm \
+        -v ${WORKDIR}:/heavyai \
         --ipc="container:${db_container_name}" \
         --interactive \
         --network="net_heavyai" \
         --workdir="/heavyai" \
         --env HEAVYDB_HOST="${db_container_name}" \
         --name "${testscript_container_name}" \
-        $test_image_name \
+        rapidsai/rapidsai-core:22.04-cuda11.0-base-ubuntu20.04-py3.9 \
         /heavyai/ci/build-conda.sh "$*"
     return $?
 }
 
 cleanup
 
-build_test_image
+#build_test_image
 
 create_docker_network
 
