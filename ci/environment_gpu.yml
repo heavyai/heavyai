@@ -1,11 +1,13 @@
 name: heavyai-gpu-dev
 channels:
 - rapidsai
+- nvidia
+- numba
 - conda-forge
 - defaults
 dependencies:
 - cudf>=0.16
-- cudatoolkit=11
+- cudatoolkit=11.0
 - python >=3.7.0
 - pyarrow>=3.0.0=*cuda
 - thrift >=0.13
