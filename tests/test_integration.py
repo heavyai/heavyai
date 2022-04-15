@@ -83,7 +83,7 @@ class TestIntegration:
 
     def test_connect_uri(self):
         uri = (
-            'heavydb://admin:HyperInteractive@{0}:6274/omnisci?'
+            'heavydb://admin:HyperInteractive@{0}:6274/heavyai?'
             'protocol=binary'.format(heavydb_host)
         )
         con = connect(uri=uri)
@@ -96,7 +96,7 @@ class TestIntegration:
 
     def test_connect_uri_and_others_raises(self):
         uri = (
-            'heavydb://admin:HyperInteractive@{0}:6274/omnisci?'
+            'heavydb://admin:HyperInteractive@{0}:6274/heavyai?'
             'protocol=binary'.format(heavydb_host)
         )
         with pytest.raises(TypeError):
