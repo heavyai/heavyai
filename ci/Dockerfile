@@ -1,4 +1,4 @@
-FROM condaforge/linux-anvil-comp7
+FROM omnisci/core-os-cuda
 
 RUN nvidia-smi
 
