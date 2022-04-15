@@ -98,7 +98,7 @@ start_docker_db() {
     db_params=()
 
     if [[ gpu_only -eq 1 ]];then
-        params+=("--gpus all")
+        params+=("--runtime=nvidia")
     fi
 
     params+=( \
@@ -143,7 +143,7 @@ test_heavyai() {
     params=()
 
     if [[ gpu_only -eq 1 ]];then
-        params+=("--gpus all")
+        params+=("--runtime=nvidia")
     fi
 
     docker run "${params[@]}" \
