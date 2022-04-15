@@ -14,11 +14,15 @@ for more.
 Quick Install (CPU)
 -------------------
 
-Packages are available on conda-forge and PyPI::
+Packages are available on conda-forge and PyPI:
 
-   conda install -c conda-forge heavyai
+```bash
+# using conda-forge
+conda install -c conda-forge heavyai
 
-   pip install heavyai
+# using pip
+pip install heavyai
+```
 
 Quick Install (GPU)
 -------------------
@@ -29,7 +33,15 @@ heavyai with GPU capabilities.
 To install heavyai for GPU Dataframe support (conda-only):
 
 ```bash
-conda create -n heavyai-gpu -c rapidsai -c nvidia -c conda-forge -c defaults python=3.9 cudf cudatoolkit=11.0 heavyai
+conda create -n heavyai-gpu -c rapidsai -c nvidia -c conda-forge -c defaults python cudf cudatoolkit=11.4 heavyai
+```
+
+Note that `pyheavydb` needs to be installed in the environment with pip
+until `heavydb` is available on conda-forge.
+
+```bash
+conda activate heavyai-gpu
+pip install pyheavydb
 ```
 
 Documentation

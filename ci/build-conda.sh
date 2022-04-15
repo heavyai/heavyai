@@ -63,7 +63,7 @@ if [[ gpu_only -ne 1 ]];then
     echo "================================"
     echo "  Starting CPU Build and Test"
     echo "================================"
-    #build_test_cpu
+    build_test_cpu
 fi
 
 if [[ cpu_only -ne 1 ]];then
