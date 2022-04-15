@@ -5,8 +5,8 @@ import datetime
 
 from heavyai._loaders import _build_input_rows
 from heavyai import _pandas_loaders
-from omnisci._parsers import ColumnDetails
-from omnisci.thrift.OmniSci import (
+from heavydb._parsers import ColumnDetails
+from heavydb.thrift.Heavy import (
     TStringRow,
     TStringValue,
     TColumn,
@@ -16,8 +16,8 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 from shapely.geometry import Point, LineString, Polygon, MultiPolygon
-from omnisci.thrift.ttypes import TColumnType
-from omnisci.common.ttypes import TTypeInfo
+from heavydb.thrift.ttypes import TColumnType
+from heavydb.common.ttypes import TTypeInfo
 
 
 def assert_columnar_equal(result, expected):

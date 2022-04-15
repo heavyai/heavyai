@@ -31,7 +31,7 @@ EOF
 db_image= # docker image that hosts the HeavyDB instance
 db_container_name="heavyai-db" # name of container the db instances runs in
 testscript_container_name="heavyai-test" # name of container the tests run in
-test_image_name="heavyai_test" # image to run the tests in
+
 cpu_only=0
 gpu_only=0
 
@@ -130,31 +130,33 @@ start_docker_db() {
     return $?
 }
 
-build_test_image() {
-    docker build --tag $test_image_name --file ./ci/Dockerfile .
-}
-
 test_heavyai() {
     # Forward args to build-conda.sh
     # --cpu-only
     # or
     # --gpu-only
-    docker run \
+
+    params=()
+
+    if [[ gpu_only -eq 1 ]];then
+        params+=("--runtime=nvidia")
+    fi
+
+    docker run "${params[@]}" \
         --rm \
+        -v ${WORKDIR}:/heavyai \
         --ipc="container:${db_container_name}" \
         --interactive \
         --network="net_heavyai" \
         --workdir="/heavyai" \
         --env HEAVYDB_HOST="${db_container_name}" \
         --name "${testscript_container_name}" \
-        $test_image_name \
+        rapidsai/rapidsai-core:22.04-cuda11.0-base-ubuntu20.04-py3.9 \
         /heavyai/ci/build-conda.sh "$*"
     return $?
 }
 
 cleanup
-
-build_test_image
 
 create_docker_network
 

@@ -4,11 +4,11 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "heavyai"
-version = "0.30"
+version = "1.0"
 requires-python = ">=3.7"
 authors = [{name = "Heavy.AI", email = "community@heavy.ai"}]
 description = "Data science toolkit support for HeavyDB"
-readme = "README.rst"
+readme = "README.md"
 license = {file = "LICENSE.md"}
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
@@ -17,7 +17,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "pyomniscidb >=5.5.0",
+    "pyheavydb >=6.0.0",
     "pyarrow >=3.0.0",
     "pandas",
     "numpy",
@@ -57,7 +57,8 @@ Source = "https://github.com/heavyai/heavyai"
 [tool.flit.sdist]
 exclude = [
     "tests/*", "scripts/*", "ci/*", ".github/*",
-    "*.yml", "*.yaml", ".*", "Jenkinsfile", "Makefile"]
+    "*.yml", "*.yaml", ".*", "Jenkinsfile", "Makefile"
+]
 
 [tool.black]
 line-length = 79

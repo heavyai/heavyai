@@ -3,11 +3,11 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- pandas
-- pyomniscidb
-- pyarrow>=3.0.0
-- pandas
 - python >=3.7.0
+- pyarrow>=3.0.0
+- thrift >=0.13
+- sqlalchemy  # 3.10 issue with one of its dependency if pip
+- pandas
 - geopandas
 - shapely
 - numpy
@@ -20,3 +20,6 @@ dependencies:
 - pytest-mock
 - sphinx
 - sphinx_rtd_theme
+- pip
+- pip:
+    - pyheavydb

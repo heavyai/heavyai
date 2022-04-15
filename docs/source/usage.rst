@@ -74,16 +74,16 @@ To create a :class:`Connection` using the ``connect()`` method along with ``user
 
    >>> from heavyai import connect
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
-   ...               dbname="heavydb")
+   ...               dbname="heavyai")
    >>> con
-   Connection(mapd://admin:***@localhost:6274/heavydb?protocol=binary)
+   Connection(heavydb://admin:***@localhost:6274/heavyai?protocol=binary)
 
 Alternatively, you can pass in a `SQLAlchemy`_-compliant connection string to
 the ``connect()`` method:
 
 .. code-block:: python
 
-   >>> uri = "mapd://admin:HyperInteractive@localhost:6274/heavydb?protocol=binary"
+   >>> uri = "heavydb://admin:HyperInteractive@localhost:6274/heavyai?protocol=binary"
    >>> con = connect(uri=uri)
    Connection(mapd://admin:***@localhost:6274/heavydb?protocol=binary)
 
@@ -171,7 +171,7 @@ install, ``pandas.read_sql()`` works everywhere):
    >>> from heavyai import connect
    >>> import pandas as pd
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
-   ...               dbname="heavydb")
+   ...               dbname="heavyai")
    >>> df = pd.read_sql("SELECT depdelay, arrdelay FROM flights_2008_10k limit 100", con)
 
 
@@ -190,7 +190,7 @@ Or by using a context manager:
 
 .. code-block:: python
 
-   >>> with con as c:
+   >>> with con.cursor() as c:
    ...     print(c)
    <heavyai.cursor.Cursor object at 0x1041f9630>
 

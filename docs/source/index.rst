@@ -1,20 +1,15 @@
-.. heavyai documentation master file, created by
-   sphinx-quickstart on Fri Jun 23 12:29:54 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 heavyai
 =========
 
 `heavyai` provides a python DB API 2.0-compliant `HeavyDB`_
-interface (formerly MapD). In addition, it provides methods to get results in
+interface (formerly OmniSci and MapD). In addition, it provides methods to get results in
 the `Apache Arrow`_-based `cudf GPU DataFrame`_ format for efficient data interchange.
 
 .. code-block:: python
 
    >>> from heavyai import connect
    >>> con = connect(user="admin", password="HyperInteractive", host="localhost",
-   ...               dbname="heavydb")
+   ...               dbname="heavyai")
    >>> df = con.select_ipc_gpu("SELECT depdelay, arrdelay"
    ...                         "FROM flights_2008_10k"
    ...                         "LIMIT 100")

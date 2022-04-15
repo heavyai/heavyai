@@ -13,9 +13,9 @@ paramstyle = "named"
 
 from .connection import connect, Connection  # noqa
 
-from omnisci.cursor import Cursor  # noqa
+from heavydb.cursor import Cursor  # noqa
 
-from omnisci.exceptions import (  # noqa
+from heavydb.exceptions import (  # noqa
     Warning,
     Error,
     InterfaceError,
@@ -29,7 +29,7 @@ from omnisci.exceptions import (  # noqa
 )
 
 
-from omnisci.dtypes import (  # noqa
+from heavydb.dtypes import (  # noqa
     Binary,
     Date,
     Time,
