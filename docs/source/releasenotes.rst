@@ -4,8 +4,8 @@ Release Notes
 =============
 
 The release notes for heavyai are managed on the GitHub repository in the `Releases tab`_. Since heavyai
-releases try to track new features in the main OmniSci Core project, it's highly recommended that you check
-the Releases tab any time you install a new version of heavyai or upgrade OmniSci so that you understand any breaking
+releases try to track new features in the main HeavyDB Core project, it's highly recommended that you check
+the Releases tab any time you install a new version of heavyai or upgrade HeavyDB so that you understand any breaking
 changes that may have been made during a new pymapd release.
 
 Some notable breaking changes include:

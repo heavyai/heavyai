@@ -1,7 +1,7 @@
 def precommit_container_image = "sloria/pre-commit"
 def precommit_container_name = "heavyai-precommit-$BUILD_NUMBER"
-def db_cuda_container_image = "omnisci/core-os-cuda"
-def db_cpu_container_image = "omnisci/core-os-cpu"
+def db_cuda_container_image = "heavyai/core-os-cuda"
+def db_cpu_container_image = "heavyai/core-os-cpu"
 def stage_succeeded
 def git_commit
 

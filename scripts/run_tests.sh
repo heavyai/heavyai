@@ -117,9 +117,9 @@ start_docker_db() {
 
     docker run "${params[@]}" \
         bash -c "\
-            /omnisci/startomnisci \
+            /heavyai/startheavy \
                 --non-interactive \
-                --data /omnisci-storage/data \
+                --data /heavydb-storage/data \
                 --enable-runtime-udf \
                 --enable-table-functions \
                 ${db_params[*]} \

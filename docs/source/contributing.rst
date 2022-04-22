@@ -80,7 +80,7 @@ Unless you are planning on developing GPU-specific functionality in heavyai, usi
      -p 6278:6278 \
      --ipc=host \
      -v /home/<username>/heavydb-storage:/heavydb-storage \
-     omnisci/core-os-cpu
+     heavyai/core-os-cpu
 
 With the above code, we:
    * create/run an instance of HeavyDB Core CPU as a daemon (i.e. running in the background until stopped)
@@ -128,7 +128,7 @@ GPU-enabled`_ container:
      -p 6278:6278 \
      --ipc=host \
      -v /home/<username>/heavydb-storage:/heavydb-storage \
-     omnisci/core-os-cuda
+     heavyai/core-os-cuda
 
 You also need to `install cudf`_ in your development environment. Because cudf is in active development, and requires attention
 to the specific version of CUDA installed, we recommend checking the `cudf documentation`_ to get the most up-to-date
@@ -210,9 +210,9 @@ When the conda-forge bot opens a PR on the heavyai-feedstock repo, one of the fe
 of the PR, check the accuracy of the package versions on the `meta.yaml`_ recipe file, and then merge once the CI tests pass.
 
 .. _HeavyDB: https://github.com/heavyai/heavydb
-.. _Docker: https://hub.docker.com/u/omnisci
-.. _CPU image: https://hub.docker.com/r/omnisci/core-os-cpu
-.. _HeavyDB Core GPU-enabled: https://hub.docker.com/r/omnisci/core-os-cuda
+.. _Docker: https://hub.docker.com/u/heavyai
+.. _CPU image: https://hub.docker.com/r/heavyai/core-os-cpu
+.. _HeavyDB Core GPU-enabled: https://hub.docker.com/r/heavyai/core-os-cuda
 .. _install cudf: https://github.com/rapidsai/cudf#installation
 .. _cudf documentation: https://rapidsai.github.io/projects/cudf/en/latest/
 .. _commit: https://github.com/heavyai/heavyai/commit/28441055959e62443954a9826f1f03d876a1cfdb
