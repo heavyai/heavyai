@@ -117,10 +117,10 @@ start_docker_db() {
 
     docker run "${params[@]}" \
         bash -c "\
-            /heavyai/startheavy \
+            /opt/heavyai/startheavy \
                 --non-interactive \
                 --data /heavydb-storage/data \
-                --enable-runtime-udf \
+                --enable-runtime-udfs \
                 --enable-table-functions \
                 ${db_params[*]} \
             "
