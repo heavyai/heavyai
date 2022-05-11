@@ -99,7 +99,13 @@ start_docker_db() {
 
     if [[ gpu_only -eq 1 ]];then
         params+=("--runtime=nvidia")
+        echo ""
+        echo "CUDA toolkit version"
+        nvcc --version
+        echo ""
+        echo "NVIDIA drivers"
         docker run --runtime=nvidia rapidsai/rapidsai-core:22.04-cuda11.0-base-ubuntu20.04-py3.9 bash -c nvidia-smi
+        echo ""
     fi
 
     params+=( \
