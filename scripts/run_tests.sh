@@ -132,18 +132,8 @@ start_docker_db() {
 #                ${db_params[*]} \
 #            "
 
-    mamba env create -n heavydb heavydb
-    conda activate heavydb
-
-    startheavy \
-            --non-interactive \
-            --data /heavydb-storage/data \
-            --enable-runtime-udfs \
-            --enable-table-functions \
-            ${db_params[*]} &
-
     # Tail logs for 10s to ensure that our db startup was successful.
-    timeout 10s docker logs -f "$db_container_name" || true
+#    timeout 10s docker logs -f "$db_container_name" || true
     return $?
 }
 
@@ -159,14 +149,15 @@ test_heavyai() {
         params+=("--runtime=nvidia")
     fi
 
+#        --ipc="container:${db_container_name}" \
+#        --env HEAVYDB_HOST="${db_container_name}" \
+
     docker run "${params[@]}" \
         --rm \
         -v ${WORKDIR}:/heavyai \
-        --ipc="container:${db_container_name}" \
         --interactive \
         --network="net_heavyai" \
         --workdir="/heavyai" \
-        --env HEAVYDB_HOST="${db_container_name}" \
         --name "${testscript_container_name}" \
         rapidsai/rapidsai-core:22.04-cuda11.0-base-ubuntu20.04-py3.9 \
         /heavyai/ci/build-conda.sh "$*"

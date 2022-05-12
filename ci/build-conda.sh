@@ -42,7 +42,6 @@ build_test_cpu() {
     mamba env create -f ci/environment.yml
     conda activate heavyai-dev
     pip install --no-deps -e .
-    pytest -sv tests/
 }
 
 build_test_gpu() {
@@ -50,12 +49,21 @@ build_test_gpu() {
     conda activate heavyai-gpu-dev
     python -c "import cudf"
     pip install --no-deps -e .
-    pytest -sv tests/
 }
 
 
 conda install -y mamba
 eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
+
+
+startheavy \
+    --non-interactive \
+    --data /heavydb-storage/data \
+    --enable-runtime-udfs \
+    --enable-table-functions \
+    ${db_params[*]} &
+
+sleep 10
 
 if [[ gpu_only -ne 1 ]];then
     echo "================================"
@@ -70,3 +78,5 @@ if [[ cpu_only -ne 1 ]];then
     echo "================================"
     build_test_gpu
 fi
+
+pytest -sv tests/
