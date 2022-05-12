@@ -104,8 +104,6 @@ start_docker_db() {
         nvcc --version
         echo ""
         echo "NVIDIA drivers"
-        docker run --runtime=nvidia $db_image bash -c nvidia-smi
-        echo ""
         nvidia-smi
         echo ""
     fi
@@ -122,17 +120,27 @@ start_docker_db() {
     )
 
 
-    echo "Launching docker run with args: ${params[*]}"
+#    echo "Launching docker run with args: ${params[*]}"
+#
+#    docker run "${params[@]}" \
+#        bash -c "\
+#            /opt/heavyai/startheavy \
+#                --non-interactive \
+#                --data /heavydb-storage/data \
+#                --enable-runtime-udfs \
+#                --enable-table-functions \
+#                ${db_params[*]} \
+#            "
 
-    docker run "${params[@]}" \
-        bash -c "\
-            /opt/heavyai/startheavy \
-                --non-interactive \
-                --data /heavydb-storage/data \
-                --enable-runtime-udfs \
-                --enable-table-functions \
-                ${db_params[*]} \
-            "
+    mamba env create -n heavydb heavydb
+    conda activate heavydb
+
+    startheavy \
+            --non-interactive \
+            --data /heavydb-storage/data \
+            --enable-runtime-udfs \
+            --enable-table-functions \
+            ${db_params[*]} &
 
     # Tail logs for 10s to ensure that our db startup was successful.
     timeout 10s docker logs -f "$db_container_name" || true
