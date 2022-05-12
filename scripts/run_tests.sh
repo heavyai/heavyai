@@ -104,7 +104,9 @@ start_docker_db() {
         nvcc --version
         echo ""
         echo "NVIDIA drivers"
-        docker run --runtime=nvidia rapidsai/rapidsai-core:22.04-cuda11.0-base-ubuntu20.04-py3.9 bash -c nvidia-smi
+        docker run --runtime=nvidia $db_image bash -c nvidia-smi
+        echo ""
+        nvidia-smi
         echo ""
     fi
 
