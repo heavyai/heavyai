@@ -55,16 +55,6 @@ build_test_gpu() {
 conda install -y mamba
 eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
 
-
-startheavy \
-    --non-interactive \
-    --data /heavydb-storage/data \
-    --enable-runtime-udfs \
-    --enable-table-functions \
-    ${db_params[*]} &
-
-sleep 10
-
 if [[ gpu_only -ne 1 ]];then
     echo "================================"
     echo "  Starting CPU Build and Test"
@@ -78,5 +68,19 @@ if [[ cpu_only -ne 1 ]];then
     echo "================================"
     build_test_gpu
 fi
+
+mamba install heavydb
+
+startheavy \
+    --non-interactive \
+    --data /heavydb-storage/data \
+    --enable-runtime-udfs \
+    --enable-table-functions \
+    ${db_params[*]} &
+
+sleep 10
+
+
+
 
 pytest -sv tests/
