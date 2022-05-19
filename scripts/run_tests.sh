@@ -85,58 +85,6 @@ fi
 
 [[ "$ready" ]] || exit 1
 
-
-create_docker_network() {
-    # Create docker network
-    # to share connection between
-    # db container & test container
-    docker network create net_heavyai || true
-}
-
-start_docker_db() {
-    params=()
-    db_params=()
-
-    if [[ gpu_only -eq 1 ]];then
-        params+=("--runtime=nvidia")
-        echo ""
-        echo "CUDA toolkit version"
-        nvcc --version
-        echo ""
-        echo "NVIDIA drivers"
-        nvidia-smi
-        echo ""
-    fi
-
-    params+=( \
-        -d \
-        --rm \
-        -p 6273 \
-        -p 6274 \
-        '--ipc=shareable' \
-        "--network=net_heavyai" \
-        "--name=$db_container_name" \
-        "$db_image" \
-    )
-
-
-#    echo "Launching docker run with args: ${params[*]}"
-#
-#    docker run "${params[@]}" \
-#        bash -c "\
-#            /opt/heavyai/startheavy \
-#                --non-interactive \
-#                --data /heavydb-storage/data \
-#                --enable-runtime-udfs \
-#                --enable-table-functions \
-#                ${db_params[*]} \
-#            "
-
-    # Tail logs for 10s to ensure that our db startup was successful.
-#    timeout 10s docker logs -f "$db_container_name" || true
-    return $?
-}
-
 test_heavyai() {
     # Forward args to build-conda.sh
     # --cpu-only
@@ -146,17 +94,20 @@ test_heavyai() {
     params=()
 
     if [[ gpu_only -eq 1 ]];then
+        echo ""
+        echo "CUDA toolkit version"
+        nvcc --version
+        echo ""
+        echo "NVIDIA drivers"
+        nvidia-smi
+        echo ""
         params+=("--runtime=nvidia")
     fi
-
-#        --ipc="container:${db_container_name}" \
-#        --env HEAVYDB_HOST="${db_container_name}" \
 
     docker run "${params[@]}" \
         --rm \
         -v ${WORKDIR}:/heavyai \
         --interactive \
-        --network="net_heavyai" \
         --workdir="/heavyai" \
         --name "${testscript_container_name}" \
         rapidsai/rapidsai-core:22.04-cuda11.0-base-ubuntu20.04-py3.9 \
@@ -166,13 +117,9 @@ test_heavyai() {
 
 cleanup
 
-create_docker_network
-
 # disable exit on error, so we still
 # get logs + perform cleanup
-set +o errexit 
-
-start_docker_db || exit_on_error "$?"
+set +o errexit
 
 if [[ gpu_only -eq 1 ]];then
     test_heavyai --gpu-only || exit_on_error "$?"

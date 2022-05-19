@@ -40,8 +40,8 @@ done
 
 
 run_heavydb() {
-    mamba create -n heavydb heavydb
-    conda activate heavydb
+    mamba create -n heavyai-db heavydb
+    conda activate heavyai-db
 
     mkdir data && initheavy data
     heavydb \
@@ -57,14 +57,16 @@ run_heavydb() {
 build_test_cpu() {
     mamba env create -f ci/environment.yml
     conda activate heavyai-dev
-    pip install --no-deps -e .
+    which python
+    pip install --no-deps .
 }
 
 build_test_gpu() {
     mamba env create -f ci/environment_gpu.yml
     conda activate heavyai-gpu-dev
+    which python
     python -c "import cudf"
-    pip install --no-deps -e .
+    pip install --no-deps .
 }
 
 
@@ -73,14 +75,14 @@ eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
 
 run_heavydb
 
-if [[ gpu_only -ne 1 ]];then
+if [[ cpu_only -eq 1 ]];then
     echo "================================"
     echo "  Starting CPU Build and Test"
     echo "================================"
     build_test_cpu
 fi
 
-if [[ cpu_only -ne 1 ]];then
+if [[ gpu_only -eq 1 ]];then
     echo "================================"
     echo "  Starting GPU Build and Test"
     echo "================================"
