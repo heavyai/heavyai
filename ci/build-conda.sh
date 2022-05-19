@@ -38,11 +38,24 @@ while [[ $# != 0 ]]; do
     esac
 done
 
+
+run_heavydb() {
+    mamba create -n heavydb heavydb
+    conda activate heavydb
+
+    mkdir data && initheavy data
+    heavydb \
+        --data data \
+        --enable-runtime-udfs \
+        --enable-table-functions &
+
+    sleep 10
+    conda deactivate
+}
+
+
 build_test_cpu() {
     mamba env create -f ci/environment.yml
-    conda activate heavyai-dev
-    mamba install heavydb
-    conda deactivate
     conda activate heavyai-dev
     pip install --no-deps -e .
 }
@@ -50,9 +63,6 @@ build_test_cpu() {
 build_test_gpu() {
     mamba env create -f ci/environment_gpu.yml
     conda activate heavyai-gpu-dev
-    mamba install heavydb
-    conda deactivate
-    conda activate heavyai-dev
     python -c "import cudf"
     pip install --no-deps -e .
 }
@@ -75,13 +85,6 @@ if [[ cpu_only -ne 1 ]];then
     build_test_gpu
 fi
 
-mkdir data && initheavy data
-heavydb \
-    --data data \
-    --enable-runtime-udfs \
-    --enable-table-functions &
-
-sleep 10
-
+run_heavydb
 
 pytest -sv tests/
