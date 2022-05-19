@@ -59,6 +59,10 @@ build_test_cpu() {
     conda activate heavyai-dev
     which python
     pip install --no-deps .
+
+    conda deactivate
+    run_heavydb
+    conda activate heavyai-dev
 }
 
 build_test_gpu() {
@@ -67,13 +71,15 @@ build_test_gpu() {
     which python
     python -c "import cudf"
     pip install --no-deps .
+
+    conda deactivate
+    run_heavydb
+    conda activate heavyai-gpu-dev
 }
 
 
 conda install -y mamba
 eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
-
-run_heavydb
 
 if [[ cpu_only -eq 1 ]];then
     echo "================================"
