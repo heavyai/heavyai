@@ -71,6 +71,8 @@ build_test_gpu() {
 conda install -y mamba
 eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
 
+run_heavydb
+
 if [[ gpu_only -ne 1 ]];then
     echo "================================"
     echo "  Starting CPU Build and Test"
@@ -84,7 +86,5 @@ if [[ cpu_only -ne 1 ]];then
     echo "================================"
     build_test_gpu
 fi
-
-run_heavydb
 
 pytest -sv tests/
