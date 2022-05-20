@@ -42,8 +42,7 @@ done
 run_heavydb() {
     rm -rf data-db && mkdir data-db && initheavy data-db
     heavydb \
-        --data data-db \
-        --enable-runtime-udfs &
+        --data data-db &
 
     sleep 10
 }
