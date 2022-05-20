@@ -40,13 +40,6 @@ done
 
 
 run_heavydb() {
-    mamba create -n heavyai-db heavydb
-    conda activate heavyai-db
-
-    export CUDA_VERSION=${CUDA_VERSION:-11.0.2}
-    export NVIDIA_VISIBLE_DEVICES=all
-    export NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
-
     rm -rf data-db && mkdir data-db && initheavy data-db
     heavydb \
         --data data-db \
@@ -54,7 +47,6 @@ run_heavydb() {
         --enable-table-functions &
 
     sleep 10
-    conda deactivate
 }
 
 
@@ -65,7 +57,10 @@ build_test_cpu() {
     pip install --no-deps .
 
     conda deactivate
+    mamba create -n heavyai-db heavydb
+    conda activate heavyai-db
     run_heavydb
+    conda deactivate
     conda activate heavyai-dev
 }
 
@@ -77,7 +72,10 @@ build_test_gpu() {
     pip install --no-deps .
 
     conda deactivate
+    mamba create -n heavyai-db "heavydb=*=*_cuda"
+    conda activate heavyai-db
     run_heavydb
+    conda deactivate
     conda activate heavyai-gpu-dev
 }
 
