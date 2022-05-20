@@ -47,9 +47,9 @@ run_heavydb() {
     export NVIDIA_VISIBLE_DEVICES=all
     export NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
 
-    mkdir data && initheavy data
+    rm -rf data-db && mkdir data-db && initheavy data-db
     heavydb \
-        --data data \
+        --data data-db \
         --enable-runtime-udfs \
         --enable-table-functions &
 
