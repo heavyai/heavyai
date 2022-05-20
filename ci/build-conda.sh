@@ -43,6 +43,10 @@ run_heavydb() {
     mamba create -n heavyai-db heavydb
     conda activate heavyai-db
 
+    export CUDA_VERSION=${CUDA_VERSION:-11.0.2}
+    export NVIDIA_VISIBLE_DEVICES=all
+    export NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+
     mkdir data && initheavy data
     heavydb \
         --data data \
