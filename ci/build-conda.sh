@@ -43,8 +43,7 @@ run_heavydb() {
     rm -rf data-db && mkdir data-db && initheavy data-db
     heavydb \
         --data data-db \
-        --enable-runtime-udfs \
-        --enable-table-functions &
+        --enable-runtime-udfs &
 
     sleep 10
 }
