@@ -37,8 +37,7 @@ cudf`_ as well to return results sets into GPU memory as a cudf GPU DataFrame:
 cudf
 ****
 
-cudf is only available on conda. Hence, the use of a conda environment is
-required.
+The pre-built cudf is only available on conda. Hence, the use of a conda environment is required.
 
 .. code-block:: console
 
