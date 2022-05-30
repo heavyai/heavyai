@@ -32,7 +32,7 @@ from itertools import product
 import coloredlogs
 from numba import cuda
 
-import pymapd
+import heavyai
 
 try:
     cuda.select_device(0)
@@ -217,10 +217,10 @@ def main(args=None):
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
-    con = omnisci.connect(
+    con = heavyai.connect(
         user='admin',
         password='HyperInteractive',
-        dbname='omnisci',
+        dbname='heavyai',
         host='localhost')
 
     grid = product(selects.keys(), _benchmarks)

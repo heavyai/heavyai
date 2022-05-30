@@ -34,28 +34,14 @@ heavyai
 If you have an NVIDIA GPU in the same machine where your heavyai code will be running, you'll want to `install
 cudf`_ as well to return results sets into GPU memory as a cudf GPU DataFrame:
 
-cudf via conda
-**************
+cudf
+****
+
+The pre-built cudf is only available on conda. Hence, the use of a conda environment is required.
 
 .. code-block:: console
 
-   # CUDA 9.2
-   conda install -c nvidia -c rapidsai -c numba -c conda-forge -c defaults cudf
-
-   # CUDA 10.0
-   conda install -c nvidia/label/cuda10.0 -c rapidsai/label/cuda10.0 -c numba \
-       -c conda-forge -c defaults cudf
-
-cudf via PyPI/pip
-*****************
-
-.. code-block:: console
-
-   # CUDA 9.2
-   pip install cudf-cuda92
-
-   # CUDA 10.0
-   pip install cudf-cuda100
+   conda install -c nvidia -c conda-forge -c defaults cudf cudatoolkit
 
 Connecting
 ----------
@@ -85,7 +71,7 @@ the ``connect()`` method:
 
    >>> uri = "heavydb://admin:HyperInteractive@localhost:6274/heavyai?protocol=binary"
    >>> con = connect(uri=uri)
-   Connection(mapd://admin:***@localhost:6274/heavydb?protocol=binary)
+   Connection(heavydb://admin:***@localhost:6274/heavyai?protocol=binary)
 
 HeavyDB Cloud
 *************
@@ -310,7 +296,7 @@ Python functions to define these as Runtime UDFs:
 .. note::
 
    Runtime UDFs can be defined if the HeavyDB server has enabled its
-   support (see ``--enable-runtime-udf`` option of ``omnisci_server``)
+   support (see ``--enable-runtime-udfs`` option of ``heavydb``)
    and `rbc`_ package is installed. This is still experimental functionality, and
    currently it does not work on the Windows operating system.
 

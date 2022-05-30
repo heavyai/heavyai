@@ -38,35 +38,53 @@ while [[ $# != 0 ]]; do
     esac
 done
 
-build_test_cpu() {
-    mamba env create -f ci/environment.yml
-    conda activate heavyai-dev
-    pip install --no-deps -e .
-    pytest -sv tests/
-}
 
-build_test_gpu() {
-    mamba env create -f ci/environment_gpu.yml
-    conda activate heavyai-gpu-dev
-    python -c "import cudf"
-    pip install --no-deps -e .
-    pytest -sv tests/
-}
+if [[ gpu_only -eq 1 ]];then
+    echo "================================"
+    echo "  Starting GPU Build and Test"
+    echo "================================"
+    environment_file=ci/environment_gpu.yml
+    environment_name=heavyai-gpu-dev
+    heavydb_version="heavydb=*=*_cuda"
+else
+    echo "================================"
+    echo "  Starting CPU Build and Test"
+    echo "================================"
+    environment_file=ci/environment.yml
+    environment_name=heavyai-dev
+    heavydb_version="heavydb=*=*_cpu"
+fi
 
 
 conda install -y mamba
 eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
 
-if [[ gpu_only -ne 1 ]];then
-    echo "================================"
-    echo "  Starting CPU Build and Test"
-    echo "================================"
-    build_test_cpu
+
+echo "================================"
+echo "  Installing Dependencies"
+echo "================================"
+mamba env create -f $environment_file
+conda activate $environment_name
+
+if [[ gpu_only -eq 1 ]];then
+     python -c "import cudf"
 fi
 
-if [[ cpu_only -ne 1 ]];then
-    echo "================================"
-    echo "  Starting GPU Build and Test"
-    echo "================================"
-    build_test_gpu
-fi
+pip install --no-deps .
+conda deactivate
+
+echo "================================"
+echo "  Starting HeavyDB"
+echo "================================"
+mamba create -n heavyai-db $heavydb_version
+conda activate heavyai-db
+rm -rf data-db && mkdir data-db && initheavy data-db
+heavydb --data data-db &
+sleep 10
+conda deactivate
+
+echo "================================"
+echo "  Test HeavyAI"
+echo "================================"
+conda activate $environment_name
+pytest -sv tests/

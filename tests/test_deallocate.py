@@ -22,7 +22,7 @@ class TestDeallocate:
             host='localhost',
             port=6274,
             protocol='binary',
-            dbname='omnisci',
+            dbname='heavyai',
         )
 
     def _transact(self, con):

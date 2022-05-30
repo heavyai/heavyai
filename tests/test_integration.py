@@ -66,7 +66,7 @@ class TestIntegration:
             host=heavydb_host,
             port=6274,
             protocol='binary',
-            dbname='omnisci',
+            dbname='heavyai',
         )
         assert con is not None
 
@@ -77,21 +77,21 @@ class TestIntegration:
             host=heavydb_host,
             port=6278,
             protocol='http',
-            dbname='omnisci',
+            dbname='heavyai',
         )
         assert con is not None
 
     def test_connect_uri(self):
         uri = (
-            'heavydb://admin:HyperInteractive@{0}:6274/omnisci?'
-            'protocol=binary'.format(heavydb_host)
+            f'heavydb://admin:HyperInteractive@{heavydb_host}:6274/heavyai?'
+            'protocol=binary'
         )
         con = connect(uri=uri)
         assert con._user == 'admin'
         assert con._password == 'HyperInteractive'
         assert con._host == heavydb_host
         assert con._port == 6274
-        assert con._dbname == 'omnisci'
+        assert con._dbname == 'heavyai'
         assert con._protocol == 'binary'
 
     def test_connect_uri_and_others_raises(self):

@@ -16,7 +16,7 @@ heavydb_host = os.environ.get('HEAVYDB_HOST', 'localhost')
 
 def _check_open():
     """
-    Test to see if OmniSci running on localhost and socket open
+    Test to see if HeavyDB running on localhost and socket open
     """
     socket = TSocket.TSocket(heavydb_host, 6274)
     transport = TTransport.TBufferedTransport(socket)
@@ -36,14 +36,14 @@ def mapd_server():
         pass
     else:
         raise RuntimeError(
-            "Unable to connect to OmniSci server at {}".format(heavydb_host)
+            f"Unable to connect to Heavydb server at {heavydb_host}"
         )
 
 
 @pytest.fixture(scope='session')
 def con(mapd_server):
     """
-    Fixture to provide Connection for tests run against live OmniSci instance
+    Fixture to provide Connection for tests run against live HeavyDB instance
     """
 
     return connect(
@@ -52,7 +52,7 @@ def con(mapd_server):
         host=heavydb_host,
         port=6274,
         protocol='binary',
-        dbname='omnisci',
+        dbname='heavyai',
     )
 
 
@@ -89,7 +89,7 @@ def gen_string():
 
 def _tests_table_no_nulls(n_samples):
     """
-    Generates a dataframe with all OmniSci types in it for use in integration
+    Generates a dataframe with all HeavyDB types in it for use in integration
     testing
     """
 

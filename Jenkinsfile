@@ -1,7 +1,7 @@
 def precommit_container_image = "sloria/pre-commit"
 def precommit_container_name = "heavyai-precommit-$BUILD_NUMBER"
-def db_cuda_container_image = "omnisci/core-os-cuda"
-def db_cpu_container_image = "omnisci/core-os-cpu"
+def db_cuda_container_image = "heavyai/core-os-cuda"
+def db_cpu_container_image = "heavyai/core-os-cpu"
 def stage_succeeded
 def git_commit
 
@@ -95,7 +95,6 @@ pipeline {
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image $db_cpu_container_image \
                                     --cpu-only
                             """
                             script { stage_succeeded = true }
@@ -120,7 +119,6 @@ pipeline {
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image $db_cuda_container_image \
                                     --gpu-only
                             """
                             script { stage_succeeded = true }
