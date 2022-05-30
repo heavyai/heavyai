@@ -63,7 +63,11 @@ echo "  Installing Dependencies"
 echo "================================"
 mamba env create -f $environment_file
 conda activate $environment_name
-python -c "import cudf"
+
+if [[ gpu_only -eq 1 ]];then
+     python -c "import cudf"
+fi
+
 pip install --no-deps .
 conda deactivate
 
