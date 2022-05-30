@@ -95,7 +95,6 @@ pipeline {
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image $db_cpu_container_image \
                                     --cpu-only
                             """
                             script { stage_succeeded = true }
@@ -120,7 +119,6 @@ pipeline {
                             setBuildStatus("Running tests", "PENDING", "$STAGE_NAME", git_commit);
                             sh """
                                 $WORKSPACE/scripts/run_tests.sh \
-                                    --db-image $db_cuda_container_image \
                                     --gpu-only
                             """
                             script { stage_succeeded = true }
