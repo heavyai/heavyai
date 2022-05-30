@@ -45,12 +45,14 @@ if [[ gpu_only -eq 1 ]];then
     echo "================================"
     environment_file=ci/environment_gpu.yml
     environment_name=heavyai-gpu-dev
+    heavydb_version="heavydb=*=*_cuda"
 else
     echo "================================"
     echo "  Starting CPU Build and Test"
     echo "================================"
     environment_file=ci/environment.yml
     environment_name=heavyai-dev
+    heavydb_version="heavydb=*=*_cpu"
 fi
 
 
@@ -74,7 +76,7 @@ conda deactivate
 echo "================================"
 echo "  Starting HeavyDB"
 echo "================================"
-mamba create -n heavyai-db "heavydb=*=*_cuda"
+mamba create -n heavyai-db $heavydb_version
 conda activate heavyai-db
 rm -rf data-db && mkdir data-db && initheavy data-db
 heavydb --data data-db &
