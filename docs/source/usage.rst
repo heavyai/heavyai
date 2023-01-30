@@ -244,7 +244,8 @@ If you aren't using arrow or pandas you can pass list of tuples to
 The high-level :meth:`Connection.load_table` method will choose the fastest
 method available based on the type of ``data``.
 
-* lists of tuples are always loaded with :meth:`Connection.load_table_rowwise`
+* :meth:`Connection.load_table_arrow` cannot accept a dataFrame with more than 2^31-1 elements.
+* Lists of tuples are always loaded with :meth:`Connection.load_table_rowwise`
 * A ``pandas.DataFrame`` or ``pyarrow.Table`` will be loaded using :meth:`Connection.load_table_arrow`
 * If upload fails using the arrow method, a ``pandas.DataFrame`` can be loaded using
   :meth:`Connection.load_table_columnar`
