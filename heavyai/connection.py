@@ -314,7 +314,6 @@ class Connection(heavydb.Connection):
         where HeavyDB running.
         """
         try:
-            from cudf.comm.gpuarrow import GpuArrowReader  # noqa
             from cudf.core.dataframe import DataFrame  # noqa
         except ImportError:
             raise ImportError(
