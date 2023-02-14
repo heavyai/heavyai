@@ -115,10 +115,10 @@ jobs:
         run: |
           mamba run -n heavyai conda list
 
-      - name: Develop heavyai
-        shell: bash -l {0}
-        run: |
-          mamba run -n heavyai python setup.py develop
+      # - name: Develop heavyai
+      #   shell: bash -l {0}
+      #   run: |
+      #     mamba run -n heavyai python setup.py develop
 
       - name: Run heavyai tests [docker]
         shell: bash -l {0}
