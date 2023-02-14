@@ -20,11 +20,11 @@ jobs:
     timeout-minutes: 35
     strategy:
       fail-fast: false
-      # matrix:
-      #   os: [ubuntu-latest]
-      #   python-version: ['3.10']
-      #   heavydb-version: ['6.4']
-      #   heavydb-from: [conda]
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.10']
+        heavydb-version: ['6.4']
+        heavydb-from: [conda]
         # include:
         #   - os: ubuntu-latest
         #     python-version: '3.10'
@@ -41,14 +41,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout
+        uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: conda-incubator/setup-miniconda
+      - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{ matrix.python-version }}
           channel-priority: strict
