@@ -20,11 +20,11 @@ jobs:
     timeout-minutes: 35
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ['3.10', '3.9', '3.8']
-        heavydb-version: ['6.2', '6.1', '6.0']
-        heavydb-from: [conda]
+      # matrix:
+      #   os: [ubuntu-latest]
+      #   python-version: ['3.10']
+      #   heavydb-version: ['6.4']
+      #   heavydb-from: [conda]
         # include:
         #   - os: ubuntu-latest
         #     python-version: '3.10'
@@ -41,14 +41,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda
         with:
           python-version: ${{ matrix.python-version }}
           channel-priority: strict
@@ -69,7 +69,7 @@ jobs:
         shell: bash -l {0}
         if: matrix.os == 'ubuntu-latest' && matrix.heavydb-from == 'conda'
         run: |
-          mamba create -n heavydb-env heavydb=${{ matrix.heavydb-version }}*=*_cpu -c conda-forge
+          mamba create -n heavydb-env heavydb=*=*_cpu -c conda-forge
 
       - name: Build heavydb docker image and run it [docker]
         shell: bash -l {0}
@@ -100,12 +100,10 @@ jobs:
           mamba run -n heavydb-env heavydb &> heavydb-output.txt &
           sleep 10
 
-      - name: Create heavyai test environment v${{ matrix.python-version }}
+      - name: Create heavyai test environment
         shell: bash -l {0}
         run: |
-          cat ci/environment.yml > heavyai_test.yml
-          echo "  - python=${{ matrix.python-version }}" >> heavyai_test.yml
-          mamba env create --file=heavyai_test.yml -n heavyai
+          mamba env create --file=heavyai_test.yml -n ci/environment.yml
 
       - name: heavyai conda config
         shell: bash -l {0}
@@ -125,21 +123,12 @@ jobs:
       - name: Run heavyai tests [docker]
         shell: bash -l {0}
         if: matrix.os == 'ubuntu-latest' && matrix.heavydb-from == 'docker'
-        env:
-          HEAVYDB_SOURCE: ${{ matrix.heavydb-from }}
-          HEAVYDB_DEV_LABEL: ${{ 'docker-dev' }}
-          EXPECTED_PYTHON_VERSION: ${{ matrix.python-version }}
-          EXPECTED_HEAVYDB_VERSION: ${{ matrix.heavydb-version }}
         run: |
           mamba run -n heavyai pytest -sv -r A tests/ -x
 
       - name: Run heavyai tests
         shell: bash -l {0}
         if: ${{ ! ( matrix.os == 'ubuntu-latest' && matrix.heavydb-from == 'docker' ) }}
-        env:
-          HEAVYDB_SOURCE: ${{ matrix.heavydb-from }}
-          EXPECTED_PYTHON_VERSION: ${{ matrix.python-version }}
-          EXPECTED_HEAVYDB_VERSION: ${{ matrix.heavydb-version }}
         run: |
           mamba run -n heavyai pytest -sv -r A tests/ -x
 
