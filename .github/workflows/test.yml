@@ -103,7 +103,7 @@ jobs:
       - name: Create heavyai test environment
         shell: bash -l {0}
         run: |
-          mamba env create --file=heavyai_test.yml -n ci/environment.yml
+          mamba env create --file=ci/environment.yml -n heavyai
 
       - name: heavyai conda config
         shell: bash -l {0}
