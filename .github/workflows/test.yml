@@ -21,23 +21,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        python-version: ['3.10']
-        heavydb-version: ['6.4']
-        heavydb-from: [conda]
-        # include:
-        #   - os: ubuntu-latest
-        #     python-version: '3.10'
-        #     numba-version: '0.56'
-        #     heavydb-version: dev
-        #     docker-image: heavyai/core-os-cpu-dev:latest
-        #     heavydb-from: docker
-        #   - os: ubuntu-latest
-        #     python-version: '3.10'
-        #     numba-version: '0.55'
-        #     heavydb-version: dev
-        #     docker-image: heavyai/core-os-cpu-dev:latest
-        #     heavydb-from: docker
+        include:
+          - os: ubuntu-latest
+            python-version: '3.10'
+            docker-image: heavyai/core-os-cpu-dev:latest
+            heavydb-from: docker
+          - os: ubuntu-latest
+            python-version: '3.10'
+            heavydb-from: conda
 
     steps:
       - name: Checkout code
