@@ -137,7 +137,7 @@ def _parse_tdf_gpu(tdf):
         # columns
         pass
 
-    batch = pa.ipc.read_record_batch(ipc_buf.to_pybytes(), schema)
+    batch = pa._cuda.read_record_batch(ipc_buf, schema)
     table = pa.Table.from_batches([batch])
     df = DataFrame()
     df.set_tdf = MethodType(set_tdf, df)
