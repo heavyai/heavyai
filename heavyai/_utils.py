@@ -143,13 +143,15 @@ def _parse_tdf_gpu(tdf):
     df.set_tdf = MethodType(set_tdf, df)
     df.get_tdf = MethodType(get_tdf, df)
 
+    # convert table -> cuDF first
     for name in table.column_names:
-        if name in dict_memo:
-            indices = table[name].combine_chunks()
-            dictionary = dict_memo[name]
-            df[name] = pa.DictionaryArray.from_arrays(indices, dictionary)
-        else:
-            df[name] = table[name]
+        df[name] = table[name]
+
+    # remap dictionary nodes
+    for name in dict_memo.keys():
+        indices = df[name].to_arrow()
+        dictionary = dict_memo[name]
+        df[name] = pa.DictionaryArray.from_arrays(indices, dictionary)
 
     df.set_tdf(tdf)
 
