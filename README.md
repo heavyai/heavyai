@@ -34,7 +34,8 @@ To install heavyai for GPU Dataframe support (conda-only):
 
 ```bash
 mamba create -n heavyai-gpu -c rapidsai -c nvidia -c conda-forge -c defaults \
-    --no-channel-priority cudf pyheavydb pytest shapely geopandas pyarrow=*=*cuda
+    --no-channel-priority \
+    cudf heavyai pyheavydb pytest shapely geopandas pyarrow=*=*cuda
 ```
 
 Documentation
