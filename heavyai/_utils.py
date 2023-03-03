@@ -100,10 +100,8 @@ def _parse_tdf_gpu(tdf):
     """
 
     import pyarrow as pa
-    from cudf.comm.gpuarrow import GpuArrowReader
     from cudf.core.dataframe import DataFrame
     from pyarrow._cuda import Context, IpcMemHandle
-    from numba import cuda
 
     ipc_handle = IpcMemHandle.from_buffer(pa.py_buffer(tdf.df_handle))
     ctx = Context()
@@ -139,24 +137,21 @@ def _parse_tdf_gpu(tdf):
         # columns
         pass
 
-    dtype = np.dtype(np.byte)
-    darr = cuda.devicearray.DeviceNDArray(
-        shape=ipc_buf.size,
-        strides=dtype.itemsize,
-        dtype=dtype,
-        gpu_data=ipc_buf.to_numba(),
-    )
-
-    reader = GpuArrowReader(schema, darr)
+    batch = pa._cuda.read_record_batch(ipc_buf, schema)
+    table = pa.Table.from_batches([batch])
     df = DataFrame()
     df.set_tdf = MethodType(set_tdf, df)
     df.get_tdf = MethodType(get_tdf, df)
 
-    for k, v in reader.to_dict().items():
-        if k in dict_memo:
-            df[k] = pa.DictionaryArray.from_arrays(v.to_arrow(), dict_memo[k])
-        else:
-            df[k] = v
+    # convert table -> cuDF first
+    for name in table.column_names:
+        df[name] = table[name]
+
+    # remap dictionary nodes
+    for name in dict_memo.keys():
+        indices = df[name].to_arrow()
+        dictionary = dict_memo[name]
+        df[name] = pa.DictionaryArray.from_arrays(indices, dictionary)
 
     df.set_tdf(tdf)
 
