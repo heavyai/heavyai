@@ -17,6 +17,7 @@ Some notable breaking changes include:
    =======    ===============
    Release    Breaking Change
    =======    ===============
+   `1.1`_     Fix `select_ipc_gpu`
    `1.0`_     Change dependency from `pyomniscidb` to `pyheavydb`
    `0.30`_    New name `heavyai`
    `0.17`_    Added preliminary support for Runtime User-Defined Functions
