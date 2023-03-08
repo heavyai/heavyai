@@ -54,3 +54,4 @@ Some notable breaking changes include:
 .. _0.17: https://github.com/heavyai/heavyai/releases/tag/v0.17.0
 .. _0.30: https://github.com/heavyai/heavyai/releases/tag/v0.30.0
 .. _1.0: https://github.com/heavyai/heavyai/releases/tag/v1.0.0
+.. _1.1: https://github.com/heavyai/heavyai/releases/tag/v1.1.0
