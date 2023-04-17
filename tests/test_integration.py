@@ -1606,3 +1606,35 @@ class TestLoaders:
                 ]['dashboard']['dataSources'].items():
                     for col in val['columnMetadata']:
                         assert col['table'] == new_dashboard_name
+
+    @pytest.mark.parametrize('func', ('ST_AsText', 'ST_AsBinary'))
+    @pytest.mark.parametrize('column, typ', [
+        ('point_', 'POINT'),
+        ('line_', 'LINESTRING'),
+        ('poly_', 'POLYGON'),
+        ('mpoly_', 'MULTIPOLYGON')])
+    def test_AsText_AsBinary(self, con, func, column, typ):
+        con.execute("drop table if exists test_geo")
+
+        con.execute(f"create table test_geo ({column} {typ})")
+        df_in = _tests_table_no_nulls(10000).filter([column])
+        con.load_table("test_geo", df_in, method='rows')
+
+        query = f'select {func}({column}) as "{column}" from test_geo'
+        try:
+            df_out = pd.read_sql(query, con)
+        except pd.errors.DatabaseError as msg:
+            err_msg = 'No match found for function signature {func}'
+            if err_msg in msg.args[0]:
+                pytest.skip('Server does not have {func}')
+
+        assert len(df_in[column]) == len(df_out[column])
+
+        # format df_in/out to shapely WKB/WKT format
+        series_in = gpd.GeoSeries(df_in[column].apply(shapely.wkt.loads))
+        if func == 'ST_AsText':
+            series_out = gpd.GeoSeries(df_out[column].apply(shapely.wkt.loads))
+        else:
+            series_out = gpd.GeoSeries(df_out[column].apply(shapely.wkb.loads))
+
+        assert series_in.geom_almost_equals(series_out, decimal=1).all()
