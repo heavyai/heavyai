@@ -32,7 +32,9 @@ except ImportError:
     gpd = None
 
 
-GEO_TYPE_NAMES = ['POINT', 'LINESTRING', 'POLYGON', 'MULTIPOLYGON']
+GEO_TYPE_NAMES = ['POINT', 'MULTIPOINT',
+                  'LINESTRING', 'MULTILINESTRING',
+                  'POLYGON', 'MULTIPOLYGON']
 GEO_TYPE_ID = [
     v[1] for v in TDatumType._NAMES_TO_VALUES.items() if v[0] in GEO_TYPE_NAMES
 ]
