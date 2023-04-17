@@ -23,7 +23,8 @@ import pandas.testing as tm
 import shapely
 from shapely.geometry import Point, LineString, Polygon, MultiPolygon
 import textwrap
-from .conftest import no_gpu
+from packaging.version import Version
+from .conftest import no_gpu, _tests_table_no_nulls
 from .data import dashboard_metadata
 
 heavydb_host = os.environ.get('HEAVYDB_HOST', 'localhost')
@@ -764,6 +765,72 @@ class TestLoaders:
         con.load_table_columnar(tmp_table, df)
         result = _cursor2df(con.execute('select * from {}'.format(tmp_table)))
         pd.testing.assert_frame_equal(df, result)
+
+    def test_load_table_arrow_geo(self, con):
+        if con.get_version() < Version("7.0"):
+            pytest.skip('Requires heavydb-internal PR 7322')
+
+        con.execute("drop table if exists test_geo")
+        con.execute(
+            """create table test_geo (
+                    point_ point,
+                    line_ linestring,
+                    poly_ polygon,
+                    mpoly_ multipolygon
+                    )"""
+        )
+        # change this once HeavyDB connector adds support for MULTI[POINT/LINESTRING]
+        #    mline_ multilinestring,
+        #    mpoint_ multipoint,
+
+        df_in = _tests_table_no_nulls(10000)
+        gdf_in = gpd.GeoDataFrame(
+            {
+                'point_': df_in.point_.apply(shapely.from_wkt),
+                # 'mpoint_': df_in.mpoint_.apply(shapely.from_wkt),
+                'line_': df_in.line_.apply(shapely.from_wkt),
+                # 'mline_': df_in.mline_.apply(shapely.from_wkt),
+                'poly_': df_in.poly_.apply(shapely.from_wkt),
+                'mpoly_': df_in.mpoly_.apply(shapely.from_wkt),
+            }
+        )
+
+        con.load_table_arrow("test_geo", gdf_in)
+
+        df_out = pd.read_sql("select * from test_geo;", con)
+        gdf_out = gpd.GeoDataFrame(
+            {
+                'point_': df_out.point_.apply(shapely.wkt.loads),
+                # 'mpoint_': df_out.mpoint_.apply(shapely.wkt.loads),
+                'line_': df_out.line_.apply(shapely.wkt.loads),
+                # 'mline_': df_out.mline_.apply(shapely.wkt.loads),
+                'poly_': df_out.poly_.apply(shapely.wkt.loads),
+                'mpoly_': df_out.mpoly_.apply(shapely.wkt.loads),
+            }
+        )
+
+        for col in gdf_in.columns:
+            s1 = gpd.GeoSeries(gdf_in[col])
+            s2 = gpd.GeoSeries(gdf_out[col])
+            # values are truncated
+            assert s1.geom_almost_equals(s2, decimal=1).all()
+
+    @pytest.mark.parametrize(
+        'col, defn',
+        [
+            ('point_', 'point'),
+            ('line_', 'linestring'),
+            ('poly_', 'polygon'),
+            ('mpoly_', 'multipolygon'),
+        ],
+    )
+    def test_load_table_arrow_geo_error(self, con, col, defn):
+        con.execute("drop table if exists test_geo")
+        con.execute(f"create table test_geo ({col} {defn})")
+        df_in = _tests_table_no_nulls(10000).filter([col])
+        msg = f"Column '{col}' is not a geometry column."
+        with pytest.raises(ValueError, match=msg):
+            con.load_table_arrow("test_geo", df_in)
 
     def test_load_infer(self, con):
 

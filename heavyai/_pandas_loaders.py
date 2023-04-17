@@ -237,7 +237,7 @@ def _serialize_arrow_payload(data, table_metadata, preserve_index=True):
     if isinstance(data, pd.DataFrame):
 
         # detect if there are categorical columns in dataframe
-        cols = data.select_dtypes(include=['category']).columns
+        cols = data.select_dtypes(include=['category', 'object']).columns
 
         # if there are categorical columns, make a copy before casting
         # to avoid mutating input data
@@ -247,6 +247,16 @@ def _serialize_arrow_payload(data, table_metadata, preserve_index=True):
             data_[cols] = data_[cols].astype('object')
         else:
             data_ = data
+
+        # convert geo columns to WKT representation
+        for col in table_metadata:
+            if col.type in GEO_TYPE_NAMES:
+                try:
+                    data_[col.name] = data_[col.name].apply(shapely.to_wkt)
+                except TypeError:
+                    msg = (f"Column '{col.name}' is not a geometry column. "
+                           "Please check your input data.")
+                    raise ValueError(msg)
 
         data = pa.RecordBatch.from_pandas(data_, preserve_index=preserve_index)
 
