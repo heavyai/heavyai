@@ -22,6 +22,7 @@ from ._pandas_loaders import build_row_desc, _serialize_arrow_payload
 from . import _pandas_loaders
 from ._mutators import set_tdf, get_tdf
 from types import MethodType
+from packaging.version import Version
 
 
 class Connection(heavydb.Connection):
@@ -637,6 +638,10 @@ class Connection(heavydb.Connection):
         )
         rendered_vega = RenderedVega(result)
         return rendered_vega
+
+    def get_version(self):
+        semver = self._client.get_version()
+        return Version(semver.split("-")[0])
 
 
 class RenderedVega:
