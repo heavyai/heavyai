@@ -1,4 +1,5 @@
 import datetime
+import functools
 import math
 
 import numpy as np
@@ -252,7 +253,11 @@ def _serialize_arrow_payload(data, table_metadata, preserve_index=True):
         for col in table_metadata:
             if col.type in GEO_TYPE_NAMES:
                 try:
-                    data_[col.name] = data_[col.name].apply(shapely.to_wkt)
+                    fn = functools.partial(shapely.to_wkt,
+                                           rounding_precision=-1,
+                                           trim=False,
+                                           output_dimension=2)
+                    data_[col.name] = data_[col.name].apply(fn)
                 except TypeError:
                     msg = (f"Column '{col.name}' is not a geometry column. "
                            "Please check your input data.")

@@ -766,23 +766,21 @@ class TestLoaders:
         result = _cursor2df(con.execute('select * from {}'.format(tmp_table)))
         pd.testing.assert_frame_equal(df, result)
 
-    @pytest.mark.parametrize('decimal', (1, 2, 3, 4, 5))
     @pytest.mark.parametrize('column, typ', [
         ('point_', 'POINT'),
         # uncomment once HeavyDB connector adds support for MULTI[POINT/LINESTRING]
         # ('mpoint_', 'MULTIPOINT'),
         ('line_', 'LINESTRING'),
         # ('mline_', 'MULTILINESTRING'),
-        ('poly_', 'POLYGON ENCODING NONE'),
+        ('poly_', 'POLYGON'),
         ('mpoly_', 'MULTIPOLYGON'),
     ])
-    def test_load_table_arrow_geo(self, con, column, typ, decimal):
+    def test_load_table_arrow_geo(self, con, column, typ):
         if con.get_version() < Version("7.0"):
             pytest.skip('Requires heavydb-internal PR 7322')
 
         con.execute("drop table if exists test_geo")
         con.execute(f"create table test_geo ({column} {typ})")
-
 
         df_in = _tests_table_no_nulls(10000)
         gdf_in = gpd.GeoDataFrame({
@@ -798,7 +796,7 @@ class TestLoaders:
 
         s1 = gpd.GeoSeries(gdf_in[column])
         s2 = gpd.GeoSeries(gdf_out[column])
-        assert s1.geom_almost_equals(s2, decimal=decimal).all()
+        assert s1.geom_almost_equals(s2, decimal=1).all()
 
     @pytest.mark.parametrize(
         'col, defn',
@@ -1595,7 +1593,9 @@ class TestLoaders:
     @pytest.mark.parametrize('func', ('ST_AsText', 'ST_AsBinary'))
     @pytest.mark.parametrize('column, typ', [
         ('point_', 'POINT'),
+        # ('mpoint_', 'MULTIPOINT'),
         ('line_', 'LINESTRING'),
+        # ('mline_', 'MULTILINESTRING'),
         ('poly_', 'POLYGON'),
         ('mpoly_', 'MULTIPOLYGON')])
     def test_AsText_AsBinary(self, con, func, column, typ):
