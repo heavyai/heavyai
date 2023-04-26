@@ -808,6 +808,9 @@ class TestLoaders:
         ],
     )
     def test_load_table_arrow_geo_error(self, con, col, defn):
+        if con.get_version() < Version("7.0"):
+            pytest.skip('Requires heavydb-internal PR 7322')
+
         con.execute("drop table if exists test_geo")
         con.execute(f"create table test_geo ({col} {defn})")
         df_in = _tests_table_no_nulls(10000).filter([col])

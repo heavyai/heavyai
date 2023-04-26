@@ -18,7 +18,7 @@ from ._utils import _parse_tdf_gpu
 from ._loaders import _build_input_rows
 from ._transforms import _change_dashboard_sources
 from .ipc import load_buffer, shmdt
-from ._pandas_loaders import build_row_desc, _serialize_arrow_payload
+from ._pandas_loaders import build_row_desc, _serialize_arrow_payload, GEO_TYPE_NAMES
 from . import _pandas_loaders
 from ._mutators import set_tdf, get_tdf
 from types import MethodType
@@ -270,8 +270,18 @@ class Connection(heavydb.Connection):
         load_table
         load_table_columnar
         load_table_rowwise
+
+        Notes
+        -----
+        Use ``load_table_columnar`` to load geometry data if ``heavydb <= 7.0``
         """
         metadata = self.get_table_details(table_name)
+        for col in metadata:
+            if col.type in GEO_TYPE_NAMES and self.get_version() < Version('7.0'):
+                # prevent the server from crashing
+                msg = (f'Cannot use `load_table_arrow` with column of type "{col.type}". '
+                        'Use `load_table_columnar` or `load_table_rowwise` instead.')
+                raise ValueError(msg)
         payload = _serialize_arrow_payload(
             data, metadata, preserve_index=preserve_index
         )
