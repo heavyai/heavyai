@@ -100,8 +100,12 @@ def get_mapd_type_from_object(data):
         return 'ARRAY/{}'.format(get_mapd_dtype(pd.Series(val)))
     elif isinstance(val, shapely.geometry.Point):
         return 'POINT'
+    elif isinstance(val, shapely.geometry.MultiPoint):
+        return 'MULTIPOINT'
     elif isinstance(val, shapely.geometry.LineString):
         return 'LINESTRING'
+    elif isinstance(val, shapely.geometry.MultiLineString):
+        return 'MULTILINESTRING'
     elif isinstance(val, shapely.geometry.Polygon):
         return 'POLYGON'
     elif isinstance(val, shapely.geometry.MultiPolygon):

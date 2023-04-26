@@ -153,7 +153,7 @@ def _tests_table_no_nulls(n_samples):
     line_ = np.squeeze(line_)
 
     mline_ = pd.read_csv("tests/data/mline_10000.zip", header=None).values
-    mline_ = np.squeeze(line_)
+    mline_ = np.squeeze(mline_)
 
     mpoly_ = pd.read_csv("tests/data/mpoly_10000.zip", header=None).values
     mpoly_ = np.squeeze(mpoly_)

@@ -15,9 +15,16 @@ from heavydb.thrift.Heavy import (
 import geopandas as gpd
 import pandas as pd
 import numpy as np
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon
+from shapely.geometry import (
+    Point,
+    MultiPoint,
+    LineString,
+    MultiLineString,
+    Polygon,
+    MultiPolygon
+)
 from heavydb.thrift.ttypes import TColumnType
-from heavydb.common.ttypes import TTypeInfo
+from heavydb.common.ttypes import TTypeInfo, TDatumType
 
 
 def assert_columnar_equal(result, expected):
@@ -357,6 +364,21 @@ class TestLoaders:
                 ],
                 id='multi-col-geo-nullable',
             ),
+            pytest.param(
+                gpd.GeoDataFrame(
+                    {
+                        'a': [MultiPoint([(1, 2), (3, 4), (5, 6)]),
+                              MultiPoint([(2, 1), (4, 3), (6, 5)])],
+                        'b': [MultiLineString([[[0, 0], [1, 2]], [[4, 4], [5, 6]]]),
+                              MultiLineString([[[0, 1], [1, 2]], [[2, 4], [4, 6]]])]
+                    }
+                ),
+                [
+                    {'name': 'a', 'type': 'MULTIPOINT', 'is_array': False},
+                    {'name': 'b', 'type': 'MULTILINESTRING', 'is_array': False},
+                ],
+                id='multi-col-geo-nullable-multi'
+            ),
         ],
     )
     def test_build_table_columnar(self, data, col_properties):
@@ -364,6 +386,11 @@ class TestLoaders:
         from heavyai._pandas_loaders import build_input_columnar
 
         col_types = get_col_types(col_properties)
+
+        for col in col_types:
+            if col.type in ('MULTILINESTRING', 'MULTIPOINT') and not \
+                    hasattr(TDatumType, col.type):
+                pytest.skip(f'Missing type "{col.type}" in pyheavydb')
 
         result = build_input_columnar(
             data,

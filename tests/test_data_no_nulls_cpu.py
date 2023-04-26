@@ -205,14 +205,15 @@ class TestCPUDataNoNulls:
                        time_ time,
                        text_ text encoding dict(32),
                        point_ point,
+                       mpoint_ multipoint,
                        line_ linestring,
+                       mline_ multilinestring,
                        mpoly_ multipolygon,
                        poly_ polygon
                        )"""
         )
 
-        df_in = _tests_table_no_nulls(10000).drop(
-            columns=["mpoint_", "mline_"])
+        df_in = _tests_table_no_nulls(10000)
         con.load_table("test_geospatial_no_nulls", df_in, method='rows')
 
         df_out = pd.read_sql(
@@ -267,10 +268,22 @@ class TestCPUDataNoNulls:
             [x.equals_exact(y, 0.000001) for x, y in zip(point_in, point_out)]
         )
 
+        mpoint_in = [wkt.loads(x) for x in df_in["mpoint_"]]
+        mpoint_out = [wkt.loads(x) for x in df_out["mpoint_"]]
+        assert all(
+            [x.equals_exact(y, 0.000001) for x, y in zip(mpoint_in, mpoint_out)]
+        )
+
         line_in = [wkt.loads(x) for x in df_in["line_"]]
         line_out = [wkt.loads(x) for x in df_out["line_"]]
         assert all(
             [x.equals_exact(y, 0.000001) for x, y in zip(line_in, line_out)]
+        )
+
+        mline_in = [wkt.loads(x) for x in df_in["mline_"]]
+        mline_out = [wkt.loads(x) for x in df_out["mline_"]]
+        assert all(
+            [x.equals_exact(y, 0.000001) for x, y in zip(mline_in, mline_out)]
         )
 
         mpoly_in = [wkt.loads(x) for x in df_in["mpoly_"]]

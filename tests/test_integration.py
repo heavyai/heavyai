@@ -21,7 +21,14 @@ import pyarrow as pa
 from pandas.api.types import is_object_dtype, is_categorical_dtype
 import pandas.testing as tm
 import shapely
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon
+from shapely.geometry import (
+    Point,
+    MultiPoint,
+    LineString,
+    MultiLineString,
+    Polygon,
+    MultiPolygon
+)
 import textwrap
 from packaging.version import Version
 from .conftest import no_gpu, _tests_table_no_nulls
@@ -37,14 +44,15 @@ TDBException.__hash__ = id
 
 def _cursor2df(cursor):
     col_types = {c.name: c.type_code for c in cursor.description}
+
+    TDatumTypeGeo = [TDatumType.POINT, TDatumType.LINESTRING,
+                     TDatumType.POLYGON, TDatumType.MULTIPOLYGON]
+    for typ in ("MULTIPOINT", "MULTILINESTRING"):
+        if hasattr(TDatumType, typ):
+            TDatumTypeGeo.append(getattr(TDatumType, typ))
+
     has_geodata = {
-        k: v
-        in [
-            TDatumType.POINT,
-            TDatumType.LINESTRING,
-            TDatumType.POLYGON,
-            TDatumType.MULTIPOLYGON,
-        ]
+        k: v in TDatumTypeGeo
         for k, v in col_types.items()
     }
     col_names = list(col_types.keys())
@@ -758,9 +766,26 @@ class TestLoaders:
                 'a POINT, b LINESTRING, c POLYGON, d MULTIPOLYGON',
                 id='geo_values',
             ),
+            pytest.param(
+                gpd.GeoDataFrame(
+                    {
+                        'a': [MultiPoint([(1, 2), (3, 4), (5, 6)]),
+                              MultiPoint([(2, 1), (4, 3), (6, 5)])],
+                        'b': [MultiLineString([[[0, 0], [1, 2]], [[4, 4], [5, 6]]]),
+                              MultiLineString([[[0, 1], [1, 2]], [[2, 4], [4, 6]]])]
+                    }
+                ),
+                'a MULTIPOINT, b MULTILINESTRING',
+                id='geo_values_multi'
+            ),
         ],
     )
     def test_load_table_columnar(self, con, tmp_table, df, table_fields):
+
+        for typ in ("MULTIPOINT", "MULTILINESTRING"):
+            if typ in table_fields and not hasattr(TDatumType, typ):
+                pytest.skip(f'Missing type "{typ}" in pyheavydb')
+
         con.execute("create table {} ({});".format(tmp_table, table_fields))
         con.load_table_columnar(tmp_table, df)
         result = _cursor2df(con.execute('select * from {}'.format(tmp_table)))
@@ -768,14 +793,16 @@ class TestLoaders:
 
     @pytest.mark.parametrize('column, typ', [
         ('point_', 'POINT'),
-        # uncomment once HeavyDB connector adds support for MULTI[POINT/LINESTRING]
-        # ('mpoint_', 'MULTIPOINT'),
+        ('mpoint_', 'MULTIPOINT'),
         ('line_', 'LINESTRING'),
-        # ('mline_', 'MULTILINESTRING'),
+        ('mline_', 'MULTILINESTRING'),
         ('poly_', 'POLYGON'),
         ('mpoly_', 'MULTIPOLYGON'),
     ])
     def test_load_table_arrow_geo(self, con, column, typ):
+        if not hasattr(TDatumType, typ):
+            pytest.skip(f'Missing type "{typ}" in pyheavydb')
+
         if con.get_version() < Version("7.0"):
             pytest.skip('Requires heavydb-internal PR 7322')
 
@@ -801,10 +828,12 @@ class TestLoaders:
     @pytest.mark.parametrize(
         'col, defn',
         [
-            ('point_', 'point'),
-            ('line_', 'linestring'),
-            ('poly_', 'polygon'),
-            ('mpoly_', 'multipolygon'),
+            ('point_', 'POINT'),
+            ('mpoint_', 'MULTIPOINT'),
+            ('line_', 'LINESTRING'),
+            ('mline_', 'MULTILINESTRING'),
+            ('poly_', 'POLYGON'),
+            ('mpoly_', 'MULTIPOLYGON'),
         ],
     )
     def test_load_table_arrow_geo_error(self, con, col, defn):
@@ -1596,12 +1625,15 @@ class TestLoaders:
     @pytest.mark.parametrize('func', ('ST_AsText', 'ST_AsBinary'))
     @pytest.mark.parametrize('column, typ', [
         ('point_', 'POINT'),
-        # ('mpoint_', 'MULTIPOINT'),
+        ('mpoint_', 'MULTIPOINT'),
         ('line_', 'LINESTRING'),
-        # ('mline_', 'MULTILINESTRING'),
+        ('mline_', 'MULTILINESTRING'),
         ('poly_', 'POLYGON'),
         ('mpoly_', 'MULTIPOLYGON')])
     def test_AsText_AsBinary(self, con, func, column, typ):
+        if not hasattr(TDatumType, typ):
+            pytest.skip(f'Missing type "{typ}" in pyheavydb')
+
         con.execute("drop table if exists test_geo")
 
         con.execute(f"create table test_geo ({column} {typ})")
