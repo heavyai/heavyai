@@ -23,7 +23,7 @@ class TestCPUDataNoNulls:
         """
         df_in = _tests_table_no_nulls(10000)
         df_in.drop(
-            columns=["point_", "line_", "mpoly_", "poly_"], inplace=True
+            columns=["point_", "mpoint_", "line_", "mline_", "mpoly_", "poly_"], inplace=True
         )
         con.execute("drop table if exists test_data_no_nulls;")
         con.load_table("test_data_no_nulls", df_in, method=method)
@@ -99,7 +99,7 @@ class TestCPUDataNoNulls:
         # need to drop unsupported columns from df_in
         df_in = _tests_table_no_nulls(10000)
         df_in.drop(
-            columns=["point_", "line_", "mpoly_", "poly_"], inplace=True
+            columns=["point_", "mpoint_", "line_", "mline_", "mpoly_", "poly_"], inplace=True
         )
 
         con.execute("drop table if exists test_data_no_nulls_ipc;")
@@ -211,7 +211,8 @@ class TestCPUDataNoNulls:
                        )"""
         )
 
-        df_in = _tests_table_no_nulls(10000)
+        df_in = _tests_table_no_nulls(10000).drop(
+            columns=["mpoint_", "mline_"])
         con.load_table("test_geospatial_no_nulls", df_in, method='rows')
 
         df_out = pd.read_sql(
