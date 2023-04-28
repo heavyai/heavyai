@@ -1622,7 +1622,7 @@ class TestLoaders:
                     for col in val['columnMetadata']:
                         assert col['table'] == new_dashboard_name
 
-    @pytest.mark.parametrize('func', ('ST_AsText', 'ST_AsBinary'))
+    @pytest.mark.parametrize('func', ('ST_AsText', 'ST_AsWkt', 'ST_AsBinary', 'ST_AsWkb'))
     @pytest.mark.parametrize('column, typ', [
         ('point_', 'POINT'),
         ('mpoint_', 'MULTIPOINT'),
@@ -1652,7 +1652,7 @@ class TestLoaders:
 
         # format df_in/out to shapely WKB/WKT format
         series_in = gpd.GeoSeries(df_in[column].apply(shapely.wkt.loads))
-        if func == 'ST_AsText':
+        if func in ('ST_AsText', 'ST_AsWkt'):
             series_out = gpd.GeoSeries(df_out[column].apply(shapely.wkt.loads))
         else:
             series_out = gpd.GeoSeries(df_out[column].apply(shapely.wkb.loads))
