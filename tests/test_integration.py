@@ -1378,7 +1378,7 @@ class TestLoaders:
         df_ipc = con.select_ipc("select * from test_categorical")
         assert df_ipc.shape == (16, 2)
 
-        res = df.append([df, df, df]).reset_index(drop=True)
+        res = pd.concat([df, df, df, df]).reset_index(drop=True)
         res["A"] = res["A"].astype('category')
         res["B"] = res["B"].astype('category')
         assert pd.DataFrame.equals(df_ipc, res)
