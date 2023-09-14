@@ -1,4 +1,5 @@
 import datetime
+import functools
 import math
 
 import numpy as np
@@ -32,7 +33,9 @@ except ImportError:
     gpd = None
 
 
-GEO_TYPE_NAMES = ['POINT', 'LINESTRING', 'POLYGON', 'MULTIPOLYGON']
+GEO_TYPE_NAMES = ['POINT', 'MULTIPOINT',
+                  'LINESTRING', 'MULTILINESTRING',
+                  'POLYGON', 'MULTIPOLYGON']
 GEO_TYPE_ID = [
     v[1] for v in TDatumType._NAMES_TO_VALUES.items() if v[0] in GEO_TYPE_NAMES
 ]
@@ -97,8 +100,12 @@ def get_mapd_type_from_object(data):
         return 'ARRAY/{}'.format(get_mapd_dtype(pd.Series(val)))
     elif isinstance(val, shapely.geometry.Point):
         return 'POINT'
+    elif isinstance(val, shapely.geometry.MultiPoint):
+        return 'MULTIPOINT'
     elif isinstance(val, shapely.geometry.LineString):
         return 'LINESTRING'
+    elif isinstance(val, shapely.geometry.MultiLineString):
+        return 'MULTILINESTRING'
     elif isinstance(val, shapely.geometry.Polygon):
         return 'POLYGON'
     elif isinstance(val, shapely.geometry.MultiPolygon):
@@ -235,7 +242,7 @@ def _serialize_arrow_payload(data, table_metadata, preserve_index=True):
     if isinstance(data, pd.DataFrame):
 
         # detect if there are categorical columns in dataframe
-        cols = data.select_dtypes(include=['category']).columns
+        cols = data.select_dtypes(include=['category', 'object']).columns
 
         # if there are categorical columns, make a copy before casting
         # to avoid mutating input data
@@ -246,6 +253,19 @@ def _serialize_arrow_payload(data, table_metadata, preserve_index=True):
         else:
             data_ = data
 
+        # convert geo columns to WKT representation
+        for col in table_metadata:
+            if col.type in GEO_TYPE_NAMES:
+                try:
+                    fn = functools.partial(shapely.to_wkt,
+                                           rounding_precision=-1,
+                                           trim=False,
+                                           output_dimension=2)
+                    data_[col.name] = data_[col.name].apply(fn)
+                except TypeError:
+                    msg = (f"Column '{col.name}' is not a geometry column. "
+                           "Please check your input data.")
+                    raise ValueError(msg)
         data = pa.RecordBatch.from_pandas(data_, preserve_index=preserve_index)
 
     stream = pa.BufferOutputStream()

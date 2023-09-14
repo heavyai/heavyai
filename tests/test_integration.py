@@ -21,9 +21,17 @@ import pyarrow as pa
 from pandas.api.types import is_object_dtype, is_categorical_dtype
 import pandas.testing as tm
 import shapely
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon
+from shapely.geometry import (
+    Point,
+    MultiPoint,
+    LineString,
+    MultiLineString,
+    Polygon,
+    MultiPolygon
+)
 import textwrap
-from .conftest import no_gpu
+from packaging.version import Version
+from .conftest import no_gpu, _tests_table_no_nulls
 from .data import dashboard_metadata
 
 heavydb_host = os.environ.get('HEAVYDB_HOST', 'localhost')
@@ -36,14 +44,15 @@ TDBException.__hash__ = id
 
 def _cursor2df(cursor):
     col_types = {c.name: c.type_code for c in cursor.description}
+
+    TDatumTypeGeo = [TDatumType.POINT, TDatumType.LINESTRING,
+                     TDatumType.POLYGON, TDatumType.MULTIPOLYGON]
+    for typ in ("MULTIPOINT", "MULTILINESTRING"):
+        if hasattr(TDatumType, typ):
+            TDatumTypeGeo.append(getattr(TDatumType, typ))
+
     has_geodata = {
-        k: v
-        in [
-            TDatumType.POINT,
-            TDatumType.LINESTRING,
-            TDatumType.POLYGON,
-            TDatumType.MULTIPOLYGON,
-        ]
+        k: v in TDatumTypeGeo
         for k, v in col_types.items()
     }
     col_names = list(col_types.keys())
@@ -757,13 +766,86 @@ class TestLoaders:
                 'a POINT, b LINESTRING, c POLYGON, d MULTIPOLYGON',
                 id='geo_values',
             ),
+            pytest.param(
+                gpd.GeoDataFrame(
+                    {
+                        'a': [MultiPoint([(1, 2), (3, 4), (5, 6)]),
+                              MultiPoint([(2, 1), (4, 3), (6, 5)])],
+                        'b': [MultiLineString([[[0, 0], [1, 2]], [[4, 4], [5, 6]]]),
+                              MultiLineString([[[0, 1], [1, 2]], [[2, 4], [4, 6]]])]
+                    }
+                ),
+                'a MULTIPOINT, b MULTILINESTRING',
+                id='geo_values_multi'
+            ),
         ],
     )
     def test_load_table_columnar(self, con, tmp_table, df, table_fields):
+
+        for typ in ("MULTIPOINT", "MULTILINESTRING"):
+            if typ in table_fields and not hasattr(TDatumType, typ):
+                pytest.skip(f'Missing type "{typ}" in pyheavydb')
+
         con.execute("create table {} ({});".format(tmp_table, table_fields))
         con.load_table_columnar(tmp_table, df)
         result = _cursor2df(con.execute('select * from {}'.format(tmp_table)))
         pd.testing.assert_frame_equal(df, result)
+
+    @pytest.mark.parametrize('column, typ', [
+        ('point_', 'POINT'),
+        ('mpoint_', 'MULTIPOINT'),
+        ('line_', 'LINESTRING'),
+        ('mline_', 'MULTILINESTRING'),
+        ('poly_', 'POLYGON'),
+        ('mpoly_', 'MULTIPOLYGON'),
+    ])
+    def test_load_table_arrow_geo(self, con, column, typ):
+        if not hasattr(TDatumType, typ):
+            pytest.skip(f'Missing type "{typ}" in pyheavydb')
+
+        if con.get_version() < Version("7.0"):
+            pytest.skip(f'Requires heavydb version 7.0, got {con.get_version()}')
+
+        con.execute("drop table if exists test_geo")
+        con.execute(f"create table test_geo ({column} {typ})")
+
+        df_in = _tests_table_no_nulls(10000)
+        gdf_in = gpd.GeoDataFrame({
+            column: df_in[column].apply(shapely.from_wkt),
+        })
+
+        con.load_table_arrow("test_geo", gdf_in)
+
+        df_out = pd.read_sql("select * from test_geo;", con)
+        gdf_out = gpd.GeoDataFrame({
+            column: df_out[column].apply(shapely.wkt.loads)
+        })
+
+        s1 = gpd.GeoSeries(gdf_in[column])
+        s2 = gpd.GeoSeries(gdf_out[column])
+        assert s1.geom_almost_equals(s2, decimal=1).all()
+
+    @pytest.mark.parametrize(
+        'col, defn',
+        [
+            ('point_', 'POINT'),
+            ('mpoint_', 'MULTIPOINT'),
+            ('line_', 'LINESTRING'),
+            ('mline_', 'MULTILINESTRING'),
+            ('poly_', 'POLYGON'),
+            ('mpoly_', 'MULTIPOLYGON'),
+        ],
+    )
+    def test_load_table_arrow_geo_error(self, con, col, defn):
+        if con.get_version() < Version("7.0"):
+            pytest.skip(f'Requires heavydb version 7.0, got {con.get_version()}')
+        con.execute("drop table if exists test_geo")
+        con.execute(f"create table test_geo ({col} {defn})")
+        df_in = _tests_table_no_nulls(10000).filter([col])
+        msg = (f"Column '{col}' is not a geometry column. Please check your "
+               "input data.")
+        with pytest.raises(ValueError, match=msg):
+            con.load_table_arrow("test_geo", df_in)
 
     def test_load_infer(self, con):
 
@@ -1539,3 +1621,40 @@ class TestLoaders:
                 ]['dashboard']['dataSources'].items():
                     for col in val['columnMetadata']:
                         assert col['table'] == new_dashboard_name
+
+    @pytest.mark.parametrize('func', ('ST_AsText', 'ST_AsWkt', 'ST_AsBinary', 'ST_AsWkb'))
+    @pytest.mark.parametrize('column, typ', [
+        ('point_', 'POINT'),
+        ('mpoint_', 'MULTIPOINT'),
+        ('line_', 'LINESTRING'),
+        ('mline_', 'MULTILINESTRING'),
+        ('poly_', 'POLYGON'),
+        ('mpoly_', 'MULTIPOLYGON')])
+    def test_AsText_AsBinary(self, con, func, column, typ):
+        if not hasattr(TDatumType, typ):
+            pytest.skip(f'Missing type "{typ}" in pyheavydb')
+
+        con.execute("drop table if exists test_geo")
+
+        con.execute(f"create table test_geo ({column} {typ})")
+        df_in = _tests_table_no_nulls(10000).filter([column])
+        con.load_table("test_geo", df_in, method='rows')
+
+        query = f'select {func}({column}) as "{column}" from test_geo'
+        try:
+            df_out = pd.read_sql(query, con)
+        except pd.errors.DatabaseError as msg:
+            err_msg = f'No match found for function signature {func}'
+            if err_msg in msg.args[0]:
+                pytest.skip(f'Server does not have {func}')
+
+        assert len(df_in[column]) == len(df_out[column])
+
+        # format df_in/out to shapely WKB/WKT format
+        series_in = gpd.GeoSeries(df_in[column].apply(shapely.wkt.loads))
+        if func in ('ST_AsText', 'ST_AsWkt'):
+            series_out = gpd.GeoSeries(df_out[column].apply(shapely.wkt.loads))
+        else:
+            series_out = gpd.GeoSeries(df_out[column].apply(shapely.wkb.loads))
+
+        assert series_in.geom_almost_equals(series_out, decimal=1).all()

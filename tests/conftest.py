@@ -146,8 +146,14 @@ def _tests_table_no_nulls(n_samples):
     point_ = pd.read_csv("tests/data/points_10000.zip", header=None).values
     point_ = np.squeeze(point_)
 
+    mpoint_ = pd.read_csv("tests/data/mpoint_10000.zip", header=None).values
+    mpoint_ = np.squeeze(mpoint_)
+
     line_ = pd.read_csv("tests/data/lines_10000.zip", header=None).values
     line_ = np.squeeze(line_)
+
+    mline_ = pd.read_csv("tests/data/mline_10000.zip", header=None).values
+    mline_ = np.squeeze(mline_)
 
     mpoly_ = pd.read_csv("tests/data/mpoly_10000.zip", header=None).values
     mpoly_ = np.squeeze(mpoly_)
@@ -168,7 +174,9 @@ def _tests_table_no_nulls(n_samples):
         'time_': time_,
         'text_': text_,
         'point_': point_,
+        'mpoint_': mpoint_,
         'line_': line_,
+        'mline_': mline_,
         'mpoly_': mpoly_,
         'poly_': poly_,
     }
