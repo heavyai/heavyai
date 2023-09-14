@@ -842,7 +842,8 @@ class TestLoaders:
         con.execute("drop table if exists test_geo")
         con.execute(f"create table test_geo ({col} {defn})")
         df_in = _tests_table_no_nulls(10000).filter([col])
-        msg = f"Column '{col}' is not a geometry column."
+        msg = (f"Column '{col}' is not a geometry column. Please check your "
+               "input data.")
         with pytest.raises(ValueError, match=msg):
             con.load_table_arrow("test_geo", df_in)
 
