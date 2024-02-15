@@ -535,7 +535,7 @@ class Connection(heavydb.Connection):
                                                        interval_count=0,
                                                        last_refresh_time='',
                                                        next_refresh_time=''),
-                                                       sharded_co lumn_name='',
+                                                       sharded_column_name='',
                                                        comment='this is a table comment')
         """
         return self._client.get_table_details(self._session, table_name)
@@ -573,7 +573,7 @@ class Connection(heavydb.Connection):
                                                        interval_count=0,
                                                        last_refresh_time='',
                                                        next_refresh_time=''),
-                                                       sharded_co lumn_name='',
+                                                       sharded_column_name='',
                                                        comment='this is a table comment')
         """
         return self._client.get_table_details_for_database(self._session, table_name, db_name)
