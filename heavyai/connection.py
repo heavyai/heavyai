@@ -213,26 +213,26 @@ class Connection(heavydb.Connection):
         if not isinstance(data, pd.DataFrame):
             raise TypeError('Unknown type {}'.format(type(data)))
 
-        table_details = self.get_column_details(table_name)
+        column_details = self.get_column_details(table_name)
         # Validate that there are the same number of columns in the table
         # as there are in the dataframe. No point trying to load the data
         # if this is not the case
-        if len(table_details) != len(data.columns):
+        if len(column_details) != len(data.columns):
             raise ValueError(
                 'Number of columns in dataframe ({}) does not \
                                 match number of columns in HeavyDB table \
                                 ({})'.format(
-                    len(data.columns), len(table_details)
+                    len(data.columns), len(column_details)
                 )
             )
 
         col_names = (
-            [i.name for i in table_details]
+            [i.name for i in column_details]
             if col_names_from_schema
             else list(data)
         )
 
-        col_types = table_details
+        col_types = column_details
 
         input_cols = _pandas_loaders.build_input_columnar(
             data,
@@ -524,7 +524,7 @@ class Connection(heavydb.Connection):
           col_type=TTypeInfo(type=1, encoding=0, nullable=True, is_array=False,
           precision=0, scale=0, comp_param=0, size=-1, dict_key=None),
           is_reserved_keyword=False, src_name='', is_system=False,
-          is_physical=False, col_id=1, default_value=None, comment='this is a column comment')],
+          is_physical=False, col_id=1, default_value=None)],
           fragment_size=32000000, page_size=2097152,
           max_rows=4611686018427387904, view_sql='', shard_count=0,
           key_metainfo='[]', is_temporary=False, partition_detail=0,
@@ -535,8 +535,7 @@ class Connection(heavydb.Connection):
                                                        interval_count=0,
                                                        last_refresh_time='',
                                                        next_refresh_time=''),
-                                                       sharded_column_name='',
-                                                       comment='this is a table comment')
+                                                       sharded_column_name='')
         """
         return self._client.get_table_details(self._session, table_name)
 
@@ -562,7 +561,7 @@ class Connection(heavydb.Connection):
           col_type=TTypeInfo(type=1, encoding=0, nullable=True, is_array=False,
           precision=0, scale=0, comp_param=0, size=-1, dict_key=None),
           is_reserved_keyword=False, src_name='', is_system=False,
-          is_physical=False, col_id=1, default_value=None, comment='this is a column comment')],
+          is_physical=False, col_id=1, default_value=None)],
           fragment_size=32000000, page_size=2097152,
           max_rows=4611686018427387904, view_sql='', shard_count=0,
           key_metainfo='[]', is_temporary=False, partition_detail=0,
@@ -573,8 +572,7 @@ class Connection(heavydb.Connection):
                                                        interval_count=0,
                                                        last_refresh_time='',
                                                        next_refresh_time=''),
-                                                       sharded_column_name='',
-                                                       comment='this is a table comment')
+                                                       sharded_column_name='')
         """
         return self._client.get_table_details_for_database(self._session, table_name, db_name)
 
