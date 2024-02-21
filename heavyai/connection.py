@@ -213,7 +213,7 @@ class Connection(heavydb.Connection):
         if not isinstance(data, pd.DataFrame):
             raise TypeError('Unknown type {}'.format(type(data)))
 
-        table_details = self.get_table_details(table_name)
+        table_details = self.get_column_details(table_name)
         # Validate that there are the same number of columns in the table
         # as there are in the dataframe. No point trying to load the data
         # if this is not the case
@@ -275,7 +275,7 @@ class Connection(heavydb.Connection):
         -----
         Use ``load_table_columnar`` to load geometry data if ``heavydb <= 7.0``
         """
-        metadata = self.get_table_details(table_name)
+        metadata = self.get_column_details(table_name)
         for col in metadata:
             if col.type in GEO_TYPE_NAMES and self.get_version() < Version('7.0'):
                 # prevent the server from crashing
@@ -481,7 +481,7 @@ class Connection(heavydb.Connection):
         """
         return self._client.get_tables(self._session)
 
-    def get_table_details(self, table_name):
+    def get_column_details(self, table_name):
         """Get the column names and data types associated with a table.
 
         Parameters
@@ -494,7 +494,7 @@ class Connection(heavydb.Connection):
 
         Examples
         --------
-        >>> con.get_table_details('stocks')
+        >>> con.get_column_details('stocks')
         [ColumnDetails(name='date_', type='STR', nullable=True, precision=0,
                        scale=0, comp_param=32, encoding='DICT'),
          ColumnDetails(name='trans', type='STR', nullable=True, precision=0,
@@ -504,6 +504,79 @@ class Connection(heavydb.Connection):
         """
         details = self._client.get_table_details(self._session, table_name)
         return _extract_column_details(details.row_desc)
+
+    def get_table_details(self, table_name):
+        """Get the `TTableDetails` object returned by the `get_table_details` thrift API call
+
+        Parameters
+        ----------
+        table_name: str
+          Name of the table to get details for.
+
+        Returns
+        -------
+        details: TTableDetails
+
+        Examples
+        --------
+        >>> con.get_table_details('test')
+        TTableDetails(row_desc=[TColumnType(col_name='a',
+          col_type=TTypeInfo(type=1, encoding=0, nullable=True, is_array=False,
+          precision=0, scale=0, comp_param=0, size=-1, dict_key=None),
+          is_reserved_keyword=False, src_name='', is_system=False,
+          is_physical=False, col_id=1, default_value=None, comment='this is a column comment')],
+          fragment_size=32000000, page_size=2097152,
+          max_rows=4611686018427387904, view_sql='', shard_count=0,
+          key_metainfo='[]', is_temporary=False, partition_detail=0,
+          table_type=0, refresh_info=TTableRefreshInfo(update_type=0,
+                                                       timing_type=0,
+                                                       start_date_time='',
+                                                       interval_type=0,
+                                                       interval_count=0,
+                                                       last_refresh_time='',
+                                                       next_refresh_time=''),
+                                                       sharded_column_name='',
+                                                       comment='this is a table comment')
+        """
+        return self._client.get_table_details(self._session, table_name)
+
+    def get_table_details_for_database(self, table_name, db_name):
+        """Get the `TTableDetails` object returned by the `get_table_details_for_database` thrift API call
+
+        Parameters
+        ----------
+        table_name: str
+          Name of the table to get details for.
+
+        db_name: str
+          Name of the database in which table resides.
+
+        Returns
+        -------
+        details: TTableDetails
+
+        Examples
+        --------
+        >>> con.get_table_details_for_database('test','test_db')
+        TTableDetails(row_desc=[TColumnType(col_name='a',
+          col_type=TTypeInfo(type=1, encoding=0, nullable=True, is_array=False,
+          precision=0, scale=0, comp_param=0, size=-1, dict_key=None),
+          is_reserved_keyword=False, src_name='', is_system=False,
+          is_physical=False, col_id=1, default_value=None, comment='this is a column comment')],
+          fragment_size=32000000, page_size=2097152,
+          max_rows=4611686018427387904, view_sql='', shard_count=0,
+          key_metainfo='[]', is_temporary=False, partition_detail=0,
+          table_type=0, refresh_info=TTableRefreshInfo(update_type=0,
+                                                       timing_type=0,
+                                                       start_date_time='',
+                                                       interval_type=0,
+                                                       interval_count=0,
+                                                       last_refresh_time='',
+                                                       next_refresh_time=''),
+                                                       sharded_column_name='',
+                                                       comment='this is a table comment')
+        """
+        return self._client.get_table_details_for_database(self._session, table_name, db_name)
 
     def get_dashboard(self, dashboard_id):
         """Return the dashboard object of a specific dashboard

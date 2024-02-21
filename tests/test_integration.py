@@ -487,7 +487,7 @@ class TestExtras:
         assert 'stocks' in result
         c.execute('drop table if exists stocks;')
 
-    def test_get_table_details(self, con):
+    def test_get_column_details(self, con):
 
         c = con.cursor()
         c.execute('drop table if exists stocks;')
@@ -503,7 +503,7 @@ class TestExtras:
         c.execute(i1)
         c.execute(i2)
 
-        result = con.get_table_details('stocks')
+        result = con.get_column_details('stocks')
         expected = [
             ColumnDetails(
                 name='date_',
@@ -1204,7 +1204,7 @@ class TestLoaders:
     )
     def test_create_table(self, con, tmp_table, df, expected):
         con.create_table(tmp_table, df)
-        for col in con.get_table_details(tmp_table):
+        for col in con.get_column_details(tmp_table):
             assert expected[col.name]['type'] == col.type
             if 'precision' in expected[col.name]:
                 assert expected[col.name]['precision'] == col.precision
@@ -1424,7 +1424,7 @@ class TestLoaders:
 
         assert ans == [('a', 'a'), ('b', 'b'), ('c', 'c'), ('a', 'a')]
 
-        assert con.get_table_details("test_categorical") == [
+        assert con.get_column_details("test_categorical") == [
             ColumnDetails(
                 name='A',
                 type='STR',

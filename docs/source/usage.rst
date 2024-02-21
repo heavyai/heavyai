@@ -262,9 +262,9 @@ Some helpful metadata are available on the ``Connection`` object.
    >>> con.get_tables()
    ['flights_2008_10k', 'stocks']
 
-2. Get column information for a table with :meth:`Connection.get_table_details`
+2. Get column information for a table with :meth:`Connection.get_column_details`
 
-   >>> con.get_table_details('stocks')
+   >>> con.get_column_details('stocks')
    [ColumnDetails(name='date_', type='STR', nullable=True, precision=0,
                   scale=0, comp_param=32),
     ColumnDetails(name='trans', type='STR', nullable=True, precision=0,
