@@ -33,8 +33,8 @@ class TestCPUDataNoNulls:
 
         # test size and table definition
         assert df_in.shape == df_out.shape
-        gtd = con.get_table_details("test_data_no_nulls")
-        name_types = [(x.name, x.type) for x in gtd]
+        gcd = con.get_column_details("test_data_no_nulls")
+        name_types = [(x.name, x.type) for x in gcd]
         assert name_types == [
             ('tinyint_', 'TINYINT'),
             ('smallint_', 'SMALLINT'),
