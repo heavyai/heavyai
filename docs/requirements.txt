@@ -1,2 +1,4 @@
+sphinx==7.1.2
+readthedocs_sphinx_ext==2.2.3
 doc
 sphinx_rtd_theme
