@@ -4,8 +4,10 @@ Tests that rely on a server running
 import base64
 import json
 import datetime
+import time
 import os
 from unittest import mock
+import multiprocessing
 
 import pytest
 from heavydb import connect, ProgrammingError, DatabaseError
@@ -115,6 +117,72 @@ class TestIntegration:
         with pytest.raises(ProgrammingError) as r:
             con.cursor().execute("this is invalid;")
         return r.match("SQL Error:")
+
+    def test_interrupt(self, tmp_con):
+        c = tmp_con.cursor()
+        res = tmp_con.execute("drop table if exists t1")
+        res = tmp_con.execute("drop table if exists t2")
+        res = tmp_con.execute("create table t1 (x int, y int)")
+        res = tmp_con.execute("create table t2 (x int, y int)")
+
+        # Load up two tables, two columns each with 100_000 records.
+        df = pd.DataFrame(
+            np.random.randint(0, 100, size=(100_000, 2)), columns=list('xy')
+        ).astype({'x': 'int32', 'y': 'int32'})
+        table = pa.Table.from_pandas(df, preserve_index=False)
+        tmp_con.load_table("t1", table, method='arrow')
+        tmp_con.load_table("t2", table, method='arrow')
+
+        # Now we contrive a loop join that will take some time
+        query_to_interrupt = "select count(1) from t1, t2"
+
+        def query_async(query):
+            print("starting query")
+            res = tmp_con.execute(query)
+            print(list(res))
+
+        process = multiprocessing.Process(
+            target=query_async, args=(query_to_interrupt,)
+        )
+        process.start()
+
+        # This temporary connection
+        # is used to poll the server
+        # to ensure the query is running.
+        poll_con = connect(
+            host=tmp_con._host, port=tmp_con._port, sessionid=tmp_con._session
+        )
+
+        query_running = False
+
+        # Keep checking the server until we can confirm the query is running.
+        # This should succeed on the first try in nearly
+        # every case, but let's retry a few times with a delay
+        # in case we get a slow CI server.
+        time_elapsed = 0.0
+        time_increment = 0.03
+        timeout_secs = 1.0
+
+        while not query_running:
+            queries = poll_con.execute("SHOW QUERIES")
+            queries = list(queries)
+            for q in queries:
+                print(q)
+                is_running = q[1] == "RUNNING"
+                query_match = q[4] == query_to_interrupt
+                if is_running and query_match:
+                    print("found query match")
+                    query_running = True
+            time.sleep(time_increment)
+            time_elapsed += time_increment
+            if time_elapsed > timeout_secs:
+                raise RuntimeError(
+                    "Timed out while attempting to find running query to interrupt"
+                )
+
+        assert query_running == True
+
+        process.terminate()
 
     def test_nonexistant_table(self, con):
         with pytest.raises(DatabaseError) as r:

@@ -56,6 +56,22 @@ def con(mapd_server):
     )
 
 
+@pytest.fixture(scope="function")
+def tmp_con(mapd_server):
+    """
+    Fixture to provide Connection for tests run against live OmniSci instance
+    """
+
+    return connect(
+        user="admin",
+        password='HyperInteractive',
+        host=omniscihost,
+        port=6274,
+        protocol='binary',
+        dbname='omnisci',
+    )
+
+
 @pytest.fixture
 def mock_client(mocker):
     """A magicmock for heavydb.connection.Client"""
