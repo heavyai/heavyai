@@ -6,12 +6,8 @@ build:
     python: "3.8"
 
 python:
-  version: 3.8
   install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - doc
+  - requirements: docs/requirements.txt
 
 sphinx:
   builder: html
