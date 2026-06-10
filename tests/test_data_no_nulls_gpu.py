@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """
 The intent of this file is to be a full integration test. Whenever possible,
 evaluate tests not only that a data type works, but that it works in the
