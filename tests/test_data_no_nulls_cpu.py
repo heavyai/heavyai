@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """
 The intent of this file is to be a full integration test. Whenever possible,
 add a datatype to the main _tests_table_no_nulls function, so that the tests
