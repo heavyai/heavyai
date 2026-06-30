@@ -21,7 +21,7 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 import pyarrow as pa
-from pandas.api.types import is_object_dtype, is_categorical_dtype
+from pandas.api.types import is_object_dtype, is_string_dtype
 import pandas.testing as tm
 import shapely
 from shapely.geometry import (
@@ -65,7 +65,7 @@ def _cursor2df(cursor):
 
     for c, _has_geodata in has_geodata.items():
         if _has_geodata:
-            df.loc[:, c] = df.loc[:, c].apply(shapely.wkt.loads)
+            df[c] = df[c].astype('object').apply(shapely.wkt.loads)
     return df
 
 
@@ -826,7 +826,7 @@ class TestLoaders:
 
         s1 = gpd.GeoSeries(gdf_in[column])
         s2 = gpd.GeoSeries(gdf_out[column])
-        assert s1.geom_almost_equals(s2, decimal=1).all()
+        assert s1.geom_equals_exact(s2, tolerance=0.1).all()
 
     @pytest.mark.parametrize(
         'col, defn',
@@ -928,10 +928,14 @@ class TestLoaders:
                     pd.Timestamp("2016"),
                     pd.Timestamp("2017"),
                     pd.Timestamp(
-                        '2017-11-28 23:55:59.342380', tz='US/Eastern'
+                        '2017-11-28 23:55:59.342380',
+                        tz=datetime.timezone(datetime.timedelta(hours=-5)),
                     ),
                     pd.Timestamp(
-                        '2018-11-28 23:55:59.342380', tz='Asia/Calcutta'
+                        '2018-11-28 23:55:59.342380',
+                        tz=datetime.timezone(
+                            datetime.timedelta(hours=5, minutes=30)
+                        ),
                     ),
                 ],
                 "date_": [
@@ -1469,10 +1473,10 @@ class TestLoaders:
         assert pd.DataFrame.equals(df_ipc, res)
 
         # test that input df wasn't mutated
-        # original input is object, categorical
+        # original input is string-like, categorical
         # to load via Arrow, converted internally to object, object
-        assert is_object_dtype(df["A"])
-        assert is_categorical_dtype(df["B"])
+        assert is_object_dtype(df["A"]) or is_string_dtype(df["A"])
+        assert isinstance(df["B"].dtype, pd.CategoricalDtype)
         con.execute("DROP TABLE IF EXISTS test_categorical;")
 
     def test_insert_unicode(self, con):
@@ -1660,4 +1664,4 @@ class TestLoaders:
         else:
             series_out = gpd.GeoSeries(df_out[column].apply(shapely.wkb.loads))
 
-        assert series_in.geom_almost_equals(series_out, decimal=1).all()
+        assert series_in.geom_equals_exact(series_out, tolerance=0.1).all()
