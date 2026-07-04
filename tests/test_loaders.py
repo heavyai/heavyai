@@ -59,6 +59,19 @@ def get_col_types(col_properties: dict):
     ]
 
 
+def _datetime_to_expected_epoch(data, precision):
+    epoch_ns = data.astype('datetime64[ns]').astype(int)
+    scale = {
+        0: 10**9,
+        3: 10**6,
+        6: 10**3,
+        9: 1,
+    }.get(precision)
+    if scale is None:
+        raise TypeError("Invalid timestamp precision: {}".format(precision))
+    return epoch_ns // scale
+
+
 def get_expected(data, col_properties):
     expected = []
     _map_col_types = {
@@ -97,14 +110,9 @@ def get_expected(data, col_properties):
             )
         else:
             if prop['type'] == 'TIMESTAMP':
-                # convert datetime to epoch
-                epoch_ns = data[prop['name']].astype(
-                    'datetime64[ns]'
-                ).astype(int)
-                if data[prop['name']].dt.nanosecond.sum():
-                    data[prop['name']] = epoch_ns
-                else:
-                    data[prop['name']] = epoch_ns // 10**9
+                data[prop['name']] = _datetime_to_expected_epoch(
+                    data[prop['name']], prop.get('precision', 0)
+                )
             elif prop['type'] == 'DECIMAL':
                 # data = (data * 10 ** precision).astype(int) \
                 #   * 10 ** (scale - precision)
@@ -123,6 +131,24 @@ def get_expected(data, col_properties):
 
 
 class TestLoaders:
+    def test_get_expected_uses_declared_timestamp_precision(self):
+        data = pd.DataFrame(
+            {'a': [pd.Timestamp('1970-01-01 00:00:01.234567')]}
+        )
+        expected = get_expected(
+            data,
+            [
+                {
+                    'name': 'a',
+                    'type': 'TIMESTAMP',
+                    'is_array': False,
+                    'precision': 3,
+                }
+            ],
+        )
+
+        assert expected[0].data.int_col.tolist() == [1234]
+
     def test_serialize_arrow_payload_casts_large_string_columns(self):
         table = pa.Table.from_arrays(
             [
