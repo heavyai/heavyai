@@ -196,7 +196,15 @@ Authorized users can also publish a new version locally:
 
    conda install flit
    flit build
+   flit publish --repository testpypi
+   python -m venv /tmp/heavyai-testpypi
+   . /tmp/heavyai-testpypi/bin/activate
+   python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ heavyai==<version>
+   python -c "import heavyai; print(heavyai.__version__)"
    flit publish
+
+Use a version that has not already been uploaded to the target index.
+Package files cannot be overwritten after upload.
 
 ***********
 conda-forge

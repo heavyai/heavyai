@@ -34,38 +34,32 @@ def time_to_seconds(time):
 
 
 def datetime_to_seconds(arr, precision):
-    """Convert an array of datetime64[ns] to seconds since the UNIX epoch"""
+    """Convert datetime-like values to epoch values at precision."""
 
     p = TimePrecision(precision)
-    if arr.dtype != np.dtype('datetime64[ns]'):
-        if arr.dtype == 'int64':
-            # The user has passed a unix timestamp already
-            return arr
+    if arr.dtype == 'int64':
+        # The user has passed a unix timestamp already.
+        return arr
 
-        if not (
-            arr.dtype == 'object'
-            or str(arr.dtype).startswith('datetime64[ns,')
-        ):
-            raise TypeError(
-                f"Invalid dtype '{arr.dtype}', expected one of: "
-                "datetime64[ns], int64 (UNIX epoch), "
-                "or object (string)"
-            )
+    if not (arr.dtype == 'object' or str(arr.dtype).startswith('datetime64[')):
+        raise TypeError(
+            f"Invalid dtype '{arr.dtype}', expected one of: "
+            "datetime64, int64 (UNIX epoch), or object (string)"
+        )
 
-        # Convert to datetime64[ns] from string
-        # Or from datetime with timezone information
-        # Return timestamp in 'UTC'
-        arr = pd.to_datetime(arr, utc=True)
-        return arr.view('i8') // 10**9  # ns -> s since epoch
-    else:
-        if p == TimePrecision.SECONDS:
-            return arr.view('i8') // 10**9
-        elif p == TimePrecision.MILLISECONDS:
-            return arr.view('i8') // 10**6
-        elif p == TimePrecision.MICROSECONDS:
-            return arr.view('i8') // 10**3
-        elif p == TimePrecision.NANOSECONDS:
-            return arr.view('i8')
+    epoch_ns = (
+        pd.to_datetime(arr, utc=True)
+        .to_numpy(dtype='datetime64[ns]')
+        .astype('int64')
+    )
+    if p == TimePrecision.SECONDS:
+        return epoch_ns // 10**9
+    elif p == TimePrecision.MILLISECONDS:
+        return epoch_ns // 10**6
+    elif p == TimePrecision.MICROSECONDS:
+        return epoch_ns // 10**3
+    elif p == TimePrecision.NANOSECONDS:
+        return epoch_ns
 
 
 def datetime_in_precisions(epoch, precision):

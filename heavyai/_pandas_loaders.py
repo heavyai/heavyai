@@ -16,6 +16,7 @@ from pandas.api.types import (
     is_float_dtype,
     is_object_dtype,
     is_datetime64_any_dtype,
+    is_string_dtype,
 )
 
 from heavydb.thrift.ttypes import TColumn, TColumnData, TColumnType
@@ -42,6 +43,68 @@ GEO_TYPE_NAMES = ['POINT', 'MULTIPOINT',
 GEO_TYPE_ID = [
     v[1] for v in TDatumType._NAMES_TO_VALUES.items() if v[0] in GEO_TYPE_NAMES
 ]
+HEAVYDB_ARROW_STRING_TYPES = (
+    set(GEO_TYPE_NAMES) | {'STR', 'TEXT', 'VARCHAR', 'CHAR'}
+)
+
+
+def _is_string_view_type(arrow_type):
+    is_string_view = getattr(pa.types, 'is_string_view', None)
+    return bool(is_string_view and is_string_view(arrow_type))
+
+
+def _arrow_string_target_type(arrow_type):
+    if pa.types.is_string(arrow_type) or pa.types.is_binary(arrow_type):
+        return None
+    if pa.types.is_large_binary(arrow_type):
+        return pa.binary()
+    if (
+        pa.types.is_large_string(arrow_type)
+        or _is_string_view_type(arrow_type)
+        or pa.types.is_null(arrow_type)
+    ):
+        return pa.string()
+    if pa.types.is_dictionary(arrow_type):
+        value_type = arrow_type.value_type
+        if pa.types.is_binary(value_type) or pa.types.is_large_binary(value_type):
+            return pa.binary()
+        if (
+            pa.types.is_string(value_type)
+            or pa.types.is_large_string(value_type)
+            or _is_string_view_type(value_type)
+        ):
+            return pa.string()
+    return None
+
+
+def _normalize_arrow_string_columns(data, table_metadata):
+    column_types = {col.name: col.type for col in table_metadata}
+    fields = []
+    changed = False
+
+    for field in data.schema:
+        target_type = None
+        if column_types.get(field.name) in HEAVYDB_ARROW_STRING_TYPES:
+            target_type = _arrow_string_target_type(field.type)
+
+        if target_type is None:
+            fields.append(field)
+            continue
+
+        fields.append(
+            pa.field(
+                field.name,
+                target_type,
+                nullable=field.nullable,
+                metadata=field.metadata,
+            )
+        )
+        changed = True
+
+    if not changed:
+        return data
+
+    return data.cast(pa.schema(fields, metadata=data.schema.metadata))
 
 
 def get_mapd_dtype(data):
@@ -72,7 +135,7 @@ def get_mapd_type_from_known(dtype):
             return 'DOUBLE'
     elif is_datetime64_any_dtype(dtype):
         return 'TIMESTAMP'
-    elif isinstance(dtype, pd.CategoricalDtype):
+    elif isinstance(dtype, pd.CategoricalDtype) or is_string_dtype(dtype):
         return 'STR'
     else:
         raise TypeError("Unhandled type {}".format(dtype))
@@ -153,7 +216,13 @@ def build_input_columnar(
     else:
         chunks = 1
 
-    dfs = np.array_split(df, chunks)
+    if chunks > 1:
+        dfs = [
+            df.iloc[indexes]
+            for indexes in np.array_split(np.arange(len(df)), chunks)
+        ]
+    else:
+        dfs = [df]
     cols_array = []
 
     for df in dfs:
@@ -161,7 +230,7 @@ def build_input_columnar(
 
         colindex = 0
         for col in col_names:
-            data = df.loc[:, [col]]
+            data = df.loc[:, [col]].copy()
 
             mapd_type = col_types[colindex].type
             is_array = col_types[colindex].is_array
@@ -183,7 +252,7 @@ def build_input_columnar(
             if mapd_type in {'TIME', 'TIMESTAMP', 'DATE', 'BOOL'}:
                 # requires a cast to integer
                 for c in data:
-                    data.loc[:, c] = thrift_cast(
+                    data[c] = thrift_cast(
                         data=data[c], mapd_type=mapd_type, precision=precision
                     )
 
@@ -191,7 +260,7 @@ def build_input_columnar(
                 # requires a calculation be done using the scale
                 # then cast to int
                 for c in data:
-                    data.loc[:, c] = thrift_cast(
+                    data[c] = thrift_cast(
                         data=data[c],
                         mapd_type=mapd_type,
                         scale=scale,
@@ -200,7 +269,7 @@ def build_input_columnar(
             if has_nulls:
                 if not is_array:
                     for c in data:
-                        data.loc[:, c] = data[c].fillna(mapd_to_na[mapd_type])
+                        data[c] = data[c].fillna(mapd_to_na[mapd_type])
 
             if is_array:
                 data = data.apply(lambda x: [i for i in x.dropna()], axis=1)
@@ -209,7 +278,7 @@ def build_input_columnar(
 
             if mapd_type in GEO_TYPE_NAMES:
                 for c in data:
-                    data.loc[:, c] = data.loc[:, c].apply(lambda g: g.wkt)
+                    data[c] = data[c].apply(lambda g: g.wkt)
             elif mapd_type not in ['FLOAT', 'DOUBLE', 'VARCHAR', 'STR']:
                 if is_array:
                     data = data.apply(
@@ -219,7 +288,7 @@ def build_input_columnar(
                     )
                 else:
                     for c in data:
-                        data.loc[:, c] = data.loc[:, c].astype('int64')
+                        data[c] = data[c].astype('int64')
 
             # If this is an array column, we need the data to be a series
             # of TColumn objects of type mapd_type.
@@ -244,13 +313,25 @@ def _serialize_arrow_payload(data, table_metadata, preserve_index=True):
 
     if isinstance(data, pd.DataFrame):
 
-        # detect if there are categorical columns in dataframe
-        cols = data.select_dtypes(include=['category', 'object']).columns
+        # Cast pandas-owned string columns to object so pyarrow emits
+        # string instead of large_string, which HeavyDB's importer rejects.
+        cols = [
+            col
+            for col in data.columns
+            if (
+                isinstance(data[col].dtype, pd.CategoricalDtype)
+                or is_object_dtype(data[col])
+                or is_string_dtype(data[col])
+            )
+        ]
+        geo_cols = [
+            col.name for col in table_metadata if col.type in GEO_TYPE_NAMES
+        ]
 
-        # if there are categorical columns, make a copy before casting
-        # to avoid mutating input data
+        # If there are categorical/string columns or geometry columns, make a
+        # copy before casting to avoid mutating input data.
         # https://github.com/omnisci/pymapd/issues/169
-        if cols.size > 0:
+        if cols or geo_cols:
             data_ = data.copy()
             data_[cols] = data_[cols].astype('object')
         else:
@@ -270,6 +351,8 @@ def _serialize_arrow_payload(data, table_metadata, preserve_index=True):
                            "Please check your input data.")
                     raise ValueError(msg)
         data = pa.RecordBatch.from_pandas(data_, preserve_index=preserve_index)
+
+    data = _normalize_arrow_string_columns(data, table_metadata)
 
     stream = pa.BufferOutputStream()
     writer = pa.RecordBatchStreamWriter(stream, data.schema)

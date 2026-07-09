@@ -8,7 +8,6 @@ import pandas as pd
 import pyarrow as pa
 import ctypes
 
-from heavydb.thrift.Heavy import TCreateParams
 from heavydb.common.ttypes import TDeviceType
 from heavydb.thrift.ttypes import (
     TDashboard,
@@ -45,7 +44,6 @@ class Connection(heavydb.Connection):
             self._session,
             table_name,
             row_desc,
-            TCreateParams(False),
         )
 
     def load_table(

@@ -139,9 +139,10 @@ class TestCPUDataNoNulls:
         )
         df_out.reset_index(drop=True, inplace=True)
 
-        # When Arrow result converted to pandas, dict comes back as category
-        # This providies extra functionality above base 'object' type
+        # Normalize pandas 3 string dtype and Arrow timestamp resolution.
+        df_in["text_"] = df_in["text_"].astype('object')
         df_out["text_"] = df_out["text_"].astype('object')
+        df_in["datetime_"] = df_in["datetime_"].astype('datetime64[s]')
 
         # select_ipc uses Arrow, so expect exact df dtypes back
         assert pd.DataFrame.equals(df_in, df_out)

@@ -18,6 +18,7 @@ from heavydb.thrift.Heavy import (
 import geopandas as gpd
 import pandas as pd
 import numpy as np
+import pyarrow as pa
 from shapely.geometry import (
     Point,
     MultiPoint,
@@ -58,6 +59,19 @@ def get_col_types(col_properties: dict):
     ]
 
 
+def _datetime_to_expected_epoch(data, precision):
+    epoch_ns = data.astype('datetime64[ns]').astype(int)
+    scale = {
+        0: 10**9,
+        3: 10**6,
+        6: 10**3,
+        9: 1,
+    }.get(precision)
+    if scale is None:
+        raise TypeError("Invalid timestamp precision: {}".format(precision))
+    return epoch_ns // scale
+
+
 def get_expected(data, col_properties):
     expected = []
     _map_col_types = {
@@ -96,13 +110,9 @@ def get_expected(data, col_properties):
             )
         else:
             if prop['type'] == 'TIMESTAMP':
-                # convert datetime to epoch
-                if data[prop['name']].dt.nanosecond.sum():
-                    data[prop['name']] = data[prop['name']].astype(int)
-                else:
-                    data[prop['name']] = (
-                        data[prop['name']].astype(int) // 10**9
-                    )
+                data[prop['name']] = _datetime_to_expected_epoch(
+                    data[prop['name']], prop.get('precision', 0)
+                )
             elif prop['type'] == 'DECIMAL':
                 # data = (data * 10 ** precision).astype(int) \
                 #   * 10 ** (scale - precision)
@@ -121,6 +131,47 @@ def get_expected(data, col_properties):
 
 
 class TestLoaders:
+    def test_get_expected_uses_declared_timestamp_precision(self):
+        data = pd.DataFrame(
+            {'a': [pd.Timestamp('1970-01-01 00:00:01.234567')]}
+        )
+        expected = get_expected(
+            data,
+            [
+                {
+                    'name': 'a',
+                    'type': 'TIMESTAMP',
+                    'is_array': False,
+                    'precision': 3,
+                }
+            ],
+        )
+
+        assert expected[0].data.int_col.tolist() == [1234]
+
+    def test_serialize_arrow_payload_casts_large_string_columns(self):
+        table = pa.Table.from_arrays(
+            [
+                pa.array(['a', 'b'], type=pa.large_string()),
+                pa.array([1, 2], type=pa.int64()),
+            ],
+            names=['text_col', 'int_col'],
+        )
+        metadata = get_col_types(
+            [
+                {'name': 'text_col', 'type': 'STR', 'is_array': False},
+                {'name': 'int_col', 'type': 'INT', 'is_array': False},
+            ]
+        )
+
+        payload = _pandas_loaders._serialize_arrow_payload(
+            table, metadata, preserve_index=False
+        )
+
+        schema = pa.ipc.open_stream(payload).schema
+        assert schema.field('text_col').type == pa.string()
+        assert schema.field('int_col').type == pa.int64()
+
     def test_build_input_rows(self):
         dt_microsecond_format = '%Y-%m-%d %H:%M:%S.%f'
 
