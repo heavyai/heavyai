@@ -4,12 +4,17 @@
 
 heavyai
 =======
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/heavyai/heavyai/blob/main/LICENSE.txt)
+[![Security](https://img.shields.io/badge/Security-Report%20a%20Vulnerability-red.svg)](https://github.com/heavyai/heavyai/blob/main/SECURITY.md)
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-blue?logo=github)](https://github.com/orgs/heavyai/discussions)
+
+
 
 This package enables using common Python data science toolkits with
-[HeavyDB](http://heavy.ai).
+[HeavyDB](https://github.com/heavyai/heavydb).
 It brings data frame support on CPU and GPU as well as support for arrow.
 See the [documentation](http://heavyai.readthedocs.io/en/latest/?badge=latest)
-for more.
+for more. NOTE: This documentation may not be up to date to the latest HeavyDB version.
 
 Quick Install (CPU)
 -------------------
@@ -41,4 +46,17 @@ mamba create -n heavyai-gpu -c rapidsai -c nvidia -c conda-forge -c defaults \
 Documentation
 -------------
 
-Further documentation for heavyai usage is available at: http://heavyai.readthedocs.io/
+Further documentation for heavyai usage is available at: http://heavyai.readthedocs.io/ NOTE: This documentation may not be up to date to the latest HeavyDB version.
+
+## Security
+> [!WARNING]
+> **Do not report security vulnerabilities through public GitHub issues!**
+
+NVIDIA takes security seriously. If you discover a vulnerability in heavyai, **DO NOT open a public issue**. Use one of the private reporting channels described in [SECURITY.md](https://github.com/heavyai/heavyai/blob/main/SECURITY.md).
+
+## Support
+Join the [HeavyAI GitHub Discussions](https://github.com/orgs/heavyai/discussions) to ask questions, share feedback, and report issues. HeavyAI maintainers review issues, discussions, and pull requests on a best effort basis without guaranteed response timelines.
+  
+## License
+Apache 2.0. See [LICENSE](https://github.com/heavyai/heavyai/blob/main/LICENSE.txt).
+
