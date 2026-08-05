@@ -134,26 +134,19 @@ You also need to `install cudf`_ in your development environment. Because cudf i
 to the specific version of CUDA installed, we recommend checking the `cudf documentation`_ to get the most up-to-date
 installation instructions.
 
--------------------------------
-Updating Apache Thrift Bindings
--------------------------------
+------------------------------------
+Updating Apache Thrift Compatibility
+------------------------------------
 
-When the upstream `HeavyDB`_ project updates its Apache Thrift definition file, the bindings shipped with
-``heavyai`` need to be regenerated. Note that the `heavydb` repository must be cloned locally.
+``heavyai`` does not ship generated Apache Thrift bindings. They are generated
+and packaged by `pyheavydb`_ from the HeavyDB IDL snapshot in that repository.
 
-.. code-block:: shell
+When the upstream `HeavyDB`_ project updates either its IDL or Thrift toolchain,
+update, test, and release `pyheavydb`_. No generated bindings or direct Thrift
+version change is needed in this repository. Raise the minimum ``pyheavydb``
+version only when ``heavyai`` requires that new client baseline, then run the
+full test suite against the new wheel. Do not copy ``gen-py`` output here.
 
-   # Clone the heavydb repository
-   git clone https://github.com/heavyai/heavydb
-
-   # Ensure you are at the root of the heavydb directory.
-   cd ./heavydb
-
-   # Use Thrift to generate the Python bindings
-   thrift -gen py -r heavy.thrift
-
-   # Copy the generated bindings to the heavyai root
-   cp -r ./gen-py/heavydb/* ../heavyai/heavydb/
 
 
 --------------------------
@@ -217,6 +210,7 @@ nothing that needs to be done to speed this up, just be patient.
 When the conda-forge bot opens a PR on the heavyai-feedstock repo, one of the feedstock maintainers needs to validate the correctness
 of the PR, check the accuracy of the package versions on the `meta.yaml`_ recipe file, and then merge once the CI tests pass.
 
+.. _pyheavydb: https://github.com/heavyai/pyheavydb
 .. _HeavyDB: https://github.com/heavyai/heavydb
 .. _Docker: https://hub.docker.com/u/heavyai
 .. _CPU image: https://hub.docker.com/r/heavyai/core-os-cpu
