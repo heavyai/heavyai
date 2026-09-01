@@ -6,7 +6,6 @@ build-backend = "flit_core.buildapi"
 name = "heavyai"
 version = "1.3.1"
 requires-python = ">=3.10"
-authors = [{name = "Heavy.AI", email = "community@heavy.ai"}]
 description = "Data science toolkit support for HeavyDB"
 readme = "README.md"
 license = {file = "LICENSE.md"}
